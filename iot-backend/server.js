@@ -101,7 +101,7 @@ app.post('/api/device/control', (req, res) => {
         return res.status(500).json({ error: 'Lỗi lưu Database' });
       }
 
-      console.log(`✅ Đã gửi lệnh [${trangThai}] và UPDATE Database cho thiết bị ID: [${id}]`);
+      console.log(`Đã gửi lệnh [${trangThai}] và UPDATE Database cho thiết bị ID: [${id}]`);
       res.json({ success: true });
     });
   });

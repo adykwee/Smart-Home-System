@@ -40,7 +40,7 @@ export default function Header() {
         </div>
         
         <button className="btn btn-outline-light border-0 text-danger fw-bold d-flex align-items-center">
-          <span className="me-2">↪</span> Đăng xuất
+           Đăng xuất
         </button>
       </div>
       
