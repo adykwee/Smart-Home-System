@@ -19,7 +19,6 @@ function MenuItem({ to, icon, label }) {
 
 export default function Sidebar() {
   return (
-    // Dùng w-100 h-100 để lấp đầy 20% do App.jsx quy định
     <div className="d-flex flex-column text-white w-100 h-100" 
          style={{ backgroundColor: '#2a2f42' }}>
       

@@ -27,13 +27,12 @@ function App() {
         {/* ======================================= */}
         <div className="d-flex flex-column" style={{ width: '80%', height: '100%' }}>
           
-          {/* HEADER PÍA TRÊN: CHIẾM ĐÚNG 15% CHIỀU CAO */}
+          {/* HEADER PhÍa TRÊn: CHIẾM ĐÚNG 15% CHIỀU CAO */}
           <div style={{ height: '10%' }}>
             <Header />
           </div>
 
           {/* NỘI DUNG CHÍNH (PAGES): CHIẾM 85% CÒN LẠI */}
-          {/* Thêm overflow-auto để nếu bảng dữ liệu dài thì chỉ phần này cuộn, header đứng im */}
           <div className="p-4 overflow-auto" style={{ height: '85%' }}>
             <Routes>
               <Route path="/" element={<Dashboard />} />

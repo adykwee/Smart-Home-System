@@ -11,7 +11,6 @@ app.use(cors());
 // ==========================================
 // CONNECT TO MYSQL DATABASE
 // ==========================================
-// Đã thay thế bằng biến môi trường
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,      
@@ -30,7 +29,7 @@ db.connect(err => {
 // ==========================================
 // CONNECT ADAFRUIT IO
 // ==========================================
-// Đã lấy Username và Key từ "két sắt" .env
+// Đã lấy Username và Key từ .env
 const ADAFRUIT_USERNAME = process.env.ADAFRUIT_USERNAME;
 const ADAFRUIT_KEY = process.env.ADAFRUIT_KEY;
 
@@ -57,19 +56,19 @@ mqttClient.on('message', (topic, message) => {
     db.query("INSERT INTO Sensor_Data (device_id, temperature) VALUES (1, ?)", [nhietDoMoi]);
   } 
 
-  // Trường hợp 2: Trạng thái thiết bị (Đồng bộ khi mạch thật thay đổi)
+  // Trường hợp 2: Trạng thái thiết bị (Đồng bộ khi mạch thay đổi)
   else if (topic.includes('device-')) {
     const feedKey = topic.split('/').pop(); // Lấy ra 'device-1'
     const status = payload === '1' ? 'ON' : 'OFF';
     
-    // Cập nhật MySQL để Web luôn hiển thị đúng trạng thái thật
+    // Cập nhật MySQL 
     const sql = "UPDATE Devices SET current_status = ? WHERE feed_key = ?";
     db.query(sql, [status, feedKey]);
   }
 });
 
 // ==========================================
-// API LẤY TRẠNG THÁI THIẾT BỊ (TỪ DATABASE THẬT)
+// API LẤY TRẠNG THÁI THIẾT BỊ (TỪ DATABASE )
 // ==========================================
 app.get('/api/devices', (req, res) => {
   const sql = "SELECT * FROM Devices";
@@ -80,7 +79,7 @@ app.get('/api/devices', (req, res) => {
 });
 
 // ==========================================
-// API NHẬN LỆNH ĐIỀU KHIỂN (FIX LỖI KHÔNG LƯU DB)
+// API NHẬN LỆNH ĐIỀU KHIỂN 
 // ==========================================
 app.post('/api/device/control', (req, res) => {
   // Lấy dữ liệu từ React gửi qua (Khớp với Devices.jsx)
@@ -93,7 +92,7 @@ app.post('/api/device/control', (req, res) => {
   mqttClient.publish(feedUrl, giaTriGuiLen, (err) => {
     if (err) return res.status(500).json({ error: 'Lỗi MQTT' });
 
-    // 2. CẬP NHẬT VÀO DATABASE (QUAN TRỌNG NHẤT)
+    // 2. CẬP NHẬT VÀO DATABASE 
     const sql = "UPDATE Devices SET current_status = ? WHERE id = ?";
     db.query(sql, [trangThai, id], (dbErr, result) => {
       if (dbErr) {

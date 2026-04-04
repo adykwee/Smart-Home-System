@@ -1,5 +1,5 @@
 export default function DeviceCard({ device, onToggle }) {
-  // 1. Kiểm tra trạng thái (Hãy đảm bảo DB trả về đúng chữ 'ON' viết hoa)
+  // 1. Kiểm tra trạng thái 
   const isOn = device.current_status === 'ON';
 
   // 2. Hàm tự render icon dựa vào type
@@ -16,14 +16,11 @@ export default function DeviceCard({ device, onToggle }) {
   return (
     <div className="card shadow-sm border-0 rounded-4 mb-4">
       <div className="card-body p-3 d-flex justify-content-between align-items-center">
-        
-        {/* NỬA TRÁI: Icon và Thông tin */}
         <div className="d-flex align-items-center">
           <div 
             className={`rounded-4 d-flex justify-content-center align-items-center me-3 ${isOn ? 'bg-primary text-white' : 'bg-secondary bg-opacity-25 text-secondary'}`}
             style={{ width: '55px', height: '55px', fontSize: '1.5rem', transition: '0.3s' }}
           >
-            {/* FIX CHỖ NÀY: Gọi hàm renderIcon thay vì device.icon */}
             {renderIcon(device.type)}
           </div>
           
