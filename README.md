@@ -55,10 +55,12 @@ Smart-Home-Project/
 *Có tài khoản Adafruit IO.
 
 ## ⚙️ Hướng dẫn cài đặt và khởi chạy
+# Thiết lập MySQL: inport file smart_home_db.sql và khởi chạy
+# Thiết lập Adafruit: Thay thông tin vào file .env
 
 # Thiết lập Backend
 1. Mở Terminal tại thư mục backend/ 
-2. Cài đặt thư viện: npm install 
+2. Cài đặt thư viện: npm install express mysql2 mqtt cors dotenv
 3. Chỉnh sửa .env: 
       PORT=3000
       DB_HOST=localhost
