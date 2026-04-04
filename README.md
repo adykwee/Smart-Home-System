@@ -58,7 +58,7 @@ Smart-Home-Project/
 
 # Thiết lập Backend
 1. Mở Terminal tại thư mục backend/ 
-2. Cài đặt thư viện: npm install express mysql2 mqtt cors dotenv
+2. Cài đặt thư viện: npm install 
 3. Chỉnh sửa .env: 
       PORT=3000
       DB_HOST=localhost
