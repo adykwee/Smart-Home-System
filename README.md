@@ -1,10 +1,10 @@
-# 🏡 Smart Home Dashboard (Hệ Thống Quản Lý Nhà Thông Minh)
+# Smart Home Dashboard (Hệ Thống Quản Lý Nhà Thông Minh)
 
 Một ứng dụng Full-stack IoT cho phép giám sát cảm biến và điều khiển các thiết bị trong nhà (đèn, quạt, khóa cửa, camera) theo thời gian thực (Real-time). Hệ thống hỗ trợ đồng bộ dữ liệu 2 chiều giữa Web, Database và Mạch phần cứng thông qua giao thức MQTT.
 
 ---
 
-## 🚀 Công Nghệ Sử Dụng
+## Công Nghệ Sử Dụng
 
 **1. Tầng Frontend (Giao diện người dùng)**
 - **React.js:** Thư viện xây dựng giao diện UI/UX linh hoạt.
@@ -23,7 +23,7 @@ Một ứng dụng Full-stack IoT cho phép giám sát cảm biến và điều 
 
 ---
 
-## 📁 Cấu Trúc Dự Án (Project Structure)
+## Cấu Trúc Dự Án (Project Structure)
 
 Dự án được chia thành 2 module độc lập để dễ quản lý và mở rộng:
 
@@ -49,12 +49,12 @@ Smart-Home-Project/
 │
 └── README.md                  # Tài liệu hướng dẫn dự án
 
-## ⚙️ Yêu cầu hệ thống:
+## ⚙️ Yêu cầu hệ thống
 *Đã cài đặt Node.js (Phiên bản 14.x trở lên).
 *Đã cài đặt XAMPP hoặc MySQL Server.
 *Có tài khoản Adafruit IO.
 
-## ⚙️ Hướng Dẫn Cài Đặt Và Khởi Chạy
+## ⚙️ Hướng dẫn cài đặt và khởi chạy
 
 # Thiết lập Backend
 1. Mở Terminal tại thư mục backend/ 
