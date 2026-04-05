@@ -1,8 +1,11 @@
 const express = require("express");
-const router = express.Router();
 const deviceController = require("../../controllers/deviceController");
 
-// Khai báo Endpoint: POST /api/v1/devices/control
-router.post("/control", deviceController.controlDevice);
+const router = express.Router();
+router.get("/", deviceController.getAll);
+router.get("/:id", deviceController.getById);
+router.post("/", deviceController.create);
+router.put("/:id", deviceController.update);
+router.delete("/:id", deviceController.delete);
 
 module.exports = router;

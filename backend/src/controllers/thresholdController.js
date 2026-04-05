@@ -1,4 +1,4 @@
-const deviceController = {
+const thresholdController = {
   getAll: async (req, res, next) => {
     try { res.status(200).json({ status: "success", data: [] }); } catch (error) { next(error); }
   },
@@ -16,4 +16,4 @@ const deviceController = {
   }
 };
 
-module.exports = deviceController;
+module.exports = thresholdController;
