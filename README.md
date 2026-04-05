@@ -5,14 +5,14 @@ Dự án Hệ thống quản lý Smart Home xây dựng dựa trên kiến trúc
 ## 1. Cấu Trúc Mã Nguồn (Project Structure)
 Dự án được ứng dụng chuẩn kiến trúc **MVC** (Model - View - Controller) cho Backend và kiến trúc **Component-based** ánh xạ theo sơ đồ Figma cho Frontend.
 
-### 🏠 Backend (`/backend`)
+### Backend (`/backend`)
 Được thiết kế xoay quanh 6 Bảng CSDL cốt lõi (Table-driven design). Mọi Logic truy vấn và API đều đi qua mô hình chuẩn này:
 - `src/models/`: Nơi chứa 6 Modules đại diện cho 6 bảng tương tác Database (sử dụng thư viện lệnh `pg`). Gồm: `userModel`, `deviceModel`, `sensorDataModel`, `systemLogModel`, `scheduleModel`, `thresholdModel`.
 - `src/controllers/`: Bộ điều hướng xử lý logic tiếp nhận (Của 6 module trên) để quyết định xuất ra kết quả API trả về cho Frontend.
 - `src/routes/`: Bản đồ URL đường dẫn truy cập (vd: `/api/v1/devices`). Tại tệp `index.js` đã gộp thành ngữ cảnh chuẩn `/api/v1/...`
 - `src/services/` & `src/middlewares/`: Nơi chứa trình chạy ngầm (cron_job) cho **Schedule**, trình đánh giá cảnh báo **AlertEngine**, kèm check Auth (bảo vệ Token JWT) và RateLimit.
 
-### 🎨 Frontend (`/frontend`)
+### Frontend (`/frontend`)
 Giao diện bám quyền thiết kế Figma:
 - `src/pages/`: Có chính xác 8 giao diện rỗng độc lập tương ứng 8 thanh điều hướng (Dashboard, DeviceStatus, Schedules, Alerts...).
 - `src/layouts/MainLayout.jsx`: Chứa Sidebar tĩnh và Topbar khung admin tiêu chuẩn.
