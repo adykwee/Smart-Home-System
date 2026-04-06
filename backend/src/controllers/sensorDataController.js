@@ -1,4 +1,12 @@
+const SensorDataModel = require("../models/sensorDataModel");
+
 const sensorDataController = {
+  getLatest: async (req, res, next) => {
+    try {
+      const latest = await SensorDataModel.getLatestTemperature();
+      res.status(200).json(latest);
+    } catch (error) { next(error); }
+  },
   getAll: async (req, res, next) => {
     try { res.status(200).json({ status: "success", data: [] }); } catch (error) { next(error); }
   },

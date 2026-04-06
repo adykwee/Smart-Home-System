@@ -3,6 +3,7 @@ const deviceController = require("../../controllers/deviceController");
 
 const router = express.Router();
 router.get("/", deviceController.getAll);
+router.post("/control", deviceController.controlDevice);
 router.get("/:id", deviceController.getById);
 router.post("/", deviceController.create);
 router.put("/:id", deviceController.update);

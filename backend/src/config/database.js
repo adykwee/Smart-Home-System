@@ -1,23 +1,24 @@
-const { Pool } = require("pg");
+const mysql = require("mysql2/promise");
 require("dotenv").config();
 
-// Khởi tạo Pool kết nối đến PostgreSQL (Hỗ trợ Neon Tech hoặc Docker Local)
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+// Khởi tạo Pool kết nối đến MySQL (XAMPP mặc định)
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "smart_home_db",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
-pool.on("connect", () => {
-  console.log("Đã kết nối tới Cơ sở dữ liệu PostgreSQL");
-});
+pool.getConnection()
+  .then((conn) => {
+    console.log("Đã kết nối tới Cơ sở dữ liệu MySQL");
+    conn.release();
+  })
+  .catch((err) => {
+    console.error("Lỗi kết nối MySQL:", err);
+  });
 
-pool.on("error", (err) => {
-  console.error("Lỗi kết nối PostgreSQL:", err);
-});
-
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-};
+module.exports = pool;

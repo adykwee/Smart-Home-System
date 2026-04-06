@@ -1,22 +1,25 @@
 # Hệ Thống Nhà Thông Minh (Smart Home System)
 
-Dự án Hệ thống quản lý Smart Home xây dựng dựa trên kiến trúc tiên tiến phân tách rõ Frontend (React/Vite) và Backend (Node.js/Express) với ngôn ngữ cơ sở dữ liệu PostgreSQL.
+Dự án Hệ thống quản lý Smart Home xây dựng dựa trên kiến trúc tiên tiến phân tách rõ Frontend (React/Vite) và Backend (Node.js/Express) với ngôn ngữ cơ sở dữ liệu MySQL (XAMPP).
 
 ## 1. Cấu Trúc Mã Nguồn (Project Structure)
-Dự án được ứng dụng chuẩn kiến trúc **MVC** (Model - View - Controller) cho Backend và kiến trúc **Component-based** ánh xạ theo sơ đồ Figma cho Frontend.
+Dự án được ứng dụng chuẩn kiến trúc **MVC** (Model - View - Controller) cho Backend và kiến trúc **Component-based** cho Frontend.
 
-### Backend (`/backend`)
-Được thiết kế xoay quanh 6 Bảng CSDL cốt lõi (Table-driven design). Mọi Logic truy vấn và API đều đi qua mô hình chuẩn này:
-- `src/models/`: Nơi chứa 6 Modules đại diện cho 6 bảng tương tác Database (sử dụng thư viện lệnh `pg`). Gồm: `userModel`, `deviceModel`, `sensorDataModel`, `systemLogModel`, `scheduleModel`, `thresholdModel`.
-- `src/controllers/`: Bộ điều hướng xử lý logic tiếp nhận (Của 6 module trên) để quyết định xuất ra kết quả API trả về cho Frontend.
-- `src/routes/`: Bản đồ URL đường dẫn truy cập (vd: `/api/v1/devices`). Tại tệp `index.js` đã gộp thành ngữ cảnh chuẩn `/api/v1/...`
-- `src/services/` & `src/middlewares/`: Nơi chứa trình chạy ngầm (cron_job) cho **Schedule**, trình đánh giá cảnh báo **AlertEngine**, kèm check Auth (bảo vệ Token JWT) và RateLimit.
-
-### Frontend (`/frontend`)
-Giao diện bám quyền thiết kế Figma:
-- `src/pages/`: Có chính xác 8 giao diện rỗng độc lập tương ứng 8 thanh điều hướng (Dashboard, DeviceStatus, Schedules, Alerts...).
-- `src/layouts/MainLayout.jsx`: Chứa Sidebar tĩnh và Topbar khung admin tiêu chuẩn.
-- Giao tiếp dữ liệu qua `axios` ở `src/services/api.js`.
+```text
+Smart-Home-System/
+├── backend/                       # RESTful API Server (Node.js/Express)
+│   ├── src/
+│   │   ├── models/                # Logic tương tác Database MySQL (của 6 bảng cốt lõi)
+│   │   ├── controllers/           # Xử lý logic nghiệp vụ và điều hướng API 
+│   │   ├── routes/                # Bản đồ URL của API (vd: /api/v1/devices)
+│   │   └── services/ & middlewares/  # Cron_job, AlertEngine, Auth (JWT), RateLimit
+│   └── .env                       # Cấu hình CSDL
+└── frontend/                      # Giao diện người dùng (React/Vite)
+    ├── src/
+    │   ├── pages/                 # 8 Giao diện rỗng bám sát Figma (Dashboard, Devices,...)
+    │   ├── layouts/               # Khung chung (Sidebar, Topbar)
+    │   └── services/api.js        # File cấu hình Axios gửi Request xuống Backend
+```
 
 ---
 
@@ -24,11 +27,13 @@ Giao diện bám quyền thiết kế Figma:
 
 ### Môi trường khuyến nghị:
 - **Node.js**: >= 18.x
-- **PostgreSQL**: >= 15.0
+- **XAMPP** (có kèm MySQL/MariaDB cài sẵn)
 
-### Bước 1: Setup Dữ liệu (PostgreSQL)
-1. Mở PGAdmin hoặc terminal SQL tạo CSDL mang tên `smart_home_db`.
-2. Import tệp thiết kế `smart_home_db.sql` bên ngoài vào hệ thống PostgreSQL để khởi tạo 6 bảng tiêu chuẩn.
+### Bước 1: Setup Dữ liệu (MySQL qua XAMPP)
+1. Bật **Apache** và **MySQL** trên bảng điều khiển của XAMPP Control Panel.
+2. Truy cập vào phpMyAdmin qua trình duyệt: http://localhost/phpmyadmin
+3. Tạo CSDL mang tên `smart_home_db`.
+4. Import tệp thiết kế `smart_home_db.sql` bên ngoài vào hệ thống MySQL để khởi tạo 6 bảng tiêu chuẩn.
 
 ### Bước 2: Setup Backend
 Mở một cửa sổ Terminal (hoặc cmd):
@@ -38,7 +43,7 @@ npm install
 
 # Đổi đuôi tệp thành .env, cấu hình tham số:
 cp .env.example .env
-# (Thay đoạn DATABASE_URL=postgresql://root:password123@localhost:5432/smart_home_db thành cấu hình cá nhân)
+# (Lưu ý: Mặc định XAMPP sử dụng user 'root' và password rỗng. Các file cấu hình đã được thiết lập sẵn)
 
 # Bật máy chủ kết nối
 npm run dev
@@ -49,6 +54,10 @@ Mở cửa sổ Terminal thứ hai:
 ```bash
 cd frontend
 npm install
+
+# Đổi đuôi tệp thành .env:
+cp .env.example .env
+
 npm run dev
 ```
 Trang web sẽ hiện diện khởi động trên localhost URL tương ứng.

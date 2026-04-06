@@ -1,98 +1,138 @@
 import { NavLink, Outlet } from "react-router-dom";
+import {
+  LayoutGrid,
+  Activity,
+  Cpu,
+  FileText,
+  Calendar,
+  AlertTriangle,
+  Users,
+  Settings,
+  Bell,
+  LogOut,
+} from "lucide-react";
+import { usePage } from "../contexts/PageContext";
 
 export default function MainLayout() {
+  const { title } = usePage();
   const links = [
-    { name: "Dashboard", path: "/" },
-    { name: "Trạng thái thiết bị", path: "/device-status" },
-    { name: "Thiết bị", path: "/devices" },
-    { name: "Nhật ký", path: "/logs" },
-    { name: "Lịch trình", path: "/schedules" },
-    { name: "Cảnh báo", path: "/alerts" },
-    { name: "Người dùng", path: "/users" },
-    { name: "Cài đặt", path: "/settings" },
+    { name: "Dashboard", path: "/", icon: LayoutGrid },
+    { name: "Trạng thái thiết bị", path: "/device-status", icon: Activity },
+    { name: "Thiết bị", path: "/devices", icon: Cpu },
+    { name: "Nhật ký", path: "/logs", icon: FileText },
+    { name: "Lịch trình", path: "/schedules", icon: Calendar },
+    { name: "Cảnh báo", path: "/alerts", icon: AlertTriangle },
+    { name: "Người dùng", path: "/users", icon: Users },
+    { name: "Cài đặt", path: "/settings", icon: Settings },
   ];
 
   return (
-    <div className="flex h-screen font-sans text-slate-800" style={{ backgroundColor: "#E2E8F0" }}>
-      {/* Sidebar - Cố định 250px theo màu xanh đen Figma */}
-      <aside className="w-64 flex flex-col" style={{ backgroundColor: "#1e293b" }}>
+    <div className="flex h-screen font-sans text-slate-800 bg-slate-100">
+      {/* Sidebar - Khớp thiết kế xanh navy (Deep Navy) */}
+      <aside className="w-64 flex flex-col bg-slate-900 border-r border-slate-800">
         <div className="p-6 flex items-center gap-3">
-          {/* Logo Placeholder */}
-          <div className="w-10 h-10 bg-green-500 rounded-full flex-shrink-0"></div>
-          <h1 className="text-xl font-bold text-white leading-tight">Smarthome App</h1>
+          <div className="w-8 h-8 bg-emerald-500 rounded-full flex-shrink-0 flex items-center justify-center">
+            <div className="w-3 h-3 bg-white rounded-full"></div>
+          </div>
+          <h1 className="text-xl font-bold text-white tracking-tight">Smart Home App</h1>
         </div>
-        
-        <div className="px-4 text-xs font-semibold text-slate-400 mt-2 mb-2">Chính</div>
-        <nav className="flex-1 px-4 space-y-1">
-          {links.slice(0, 6).map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded-lg font-medium transition-all ${
-                  isActive
-                    ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/20"
-                    : "text-slate-300 hover:text-white hover:bg-white/5"
-                }`
-              }
-            >
-              {link.name}
-            </NavLink>
-          ))}
-          
-          <div className="text-xs font-semibold text-slate-400 mt-6 mb-2">Quản trị</div>
-          {links.slice(6).map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded-lg font-medium transition-all ${
-                  isActive
-                    ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/20"
-                    : "text-slate-300 hover:text-white hover:bg-white/5"
-                }`
-              }
-            >
-              {link.name}
-            </NavLink>
-          ))}
+
+        <div className="px-5 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2 mb-3">
+          Chính
+        </div>
+        <nav className="flex-1 px-3 space-y-1">
+          {links.slice(0, 6).map((link) => {
+            const Icon = link.icon;
+            return (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${isActive
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`
+                }
+              >
+                <Icon size={20} strokeWidth={2.5} />
+                {link.name}
+              </NavLink>
+            );
+          })}
+
+          <div className="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-8 mb-3">
+            Quản trị
+          </div>
+          {links.slice(6).map((link) => {
+            const Icon = link.icon;
+            return (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${isActive
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`
+                }
+              >
+                <Icon size={20} strokeWidth={2.5} />
+                {link.name}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        {/* Footer Sidebar */}
-        <div className="p-4 m-4 rounded-xl bg-white/10 border border-white/5">
+        {/* Footer Sidebar (Hệ thống trạng thái viên thuốc) */}
+        <div className="p-4 m-4 rounded-xl bg-slate-800/80 border border-slate-700/50 flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <div className="text-sm text-slate-200">
-              <span className="text-green-400 font-semibold">Hệ thống</span>
-              <br />
-              <span className="text-xs">Đang chờ dữ liệu...</span>
+            <div className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </div>
+            <span className="text-sm font-semibold text-emerald-400">Hệ thống hoạt động</span>
           </div>
+          <span className="text-xs text-slate-400 ml-4.5">13 thiết bị đang online</span>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Topbar */}
-        <header className="h-20 border-b border-slate-300/50 flex items-center justify-between px-8 bg-inherit">
-          <div className="text-2xl font-bold text-slate-700"></div>
-          <div className="flex items-center gap-6">
-            <button className="text-slate-400 hover:text-slate-600 transition">🔔</button>
-            <div className="flex items-center gap-3 border-l border-slate-300 pl-6 cursor-pointer">
-              <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center font-bold text-slate-600">?</div>
-              <div>
-                <p className="text-sm font-bold text-slate-800">Người dùng</p>
-                <p className="text-xs text-slate-500">Đang chờ dữ liệu</p>
+        <header className="h-16 border-b border-slate-200/50 flex items-center justify-between px-8 bg-white/70 backdrop-blur-md sticky top-0 z-10 transition-all">
+          <div className="text-xl font-bold text-slate-800 uppercase tracking-tight">
+            {title}
+          </div>
+          <div className="flex items-center gap-5">
+            {/* Notification Bell */}
+            <button className="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
+              <Bell size={20} />
+              <span className="absolute top-1 right-1.5 w-2 h-2 bg-emerald-500 border-2 border-white rounded-full"></span>
+            </button>
+
+            <div className="w-px h-6 bg-slate-200 mx-1"></div>
+
+            {/* User Profile */}
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600 ring-2 ring-transparent group-hover:ring-indigo-100 transition">
+                AD
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-bold text-slate-800 leading-tight">Admin</p>
+                <p className="text-xs text-slate-500 leading-tight">Quản trị viên</p>
               </div>
             </div>
-            <button className="flex items-center gap-2 text-rose-500 font-bold ml-4 hover:bg-rose-50 px-3 py-2 rounded-lg transition">
-              <span>Đăng xuất</span>
+
+            {/* Log Out */}
+            <button className="flex items-center gap-2 text-rose-500 text-sm font-semibold ml-2 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors">
+              <LogOut size={18} strokeWidth={2.5} />
+              <span className="hidden sm:inline">Đăng xuất</span>
             </button>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-6 md:p-8">
           <Outlet />
         </main>
       </div>

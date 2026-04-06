@@ -10,7 +10,8 @@ const mqttClient = mqtt.connect(MQTT_BROKER);
 mqttClient.on("connect", () => {
   console.log("Đã kết nối tới Adafruit IO MQTT Broker");
   // Subscribe các Feeds cần thiết ngay khi kết nối
-  mqttClient.subscribe(`${ADAFRUIT_USERNAME}/feeds/trang-thai-den`);
+  mqttClient.subscribe(`${ADAFRUIT_USERNAME}/feeds/sensor-nhietdo`);
+  mqttClient.subscribe(`${ADAFRUIT_USERNAME}/feeds/fan`);
 });
 
 mqttClient.on("error", (err) => {

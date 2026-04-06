@@ -2,6 +2,7 @@ const express = require("express");
 const sensorDataController = require("../../controllers/sensorDataController");
 
 const router = express.Router();
+router.get("/latest", sensorDataController.getLatest);
 router.get("/", sensorDataController.getAll);
 router.get("/:id", sensorDataController.getById);
 router.post("/", sensorDataController.create);

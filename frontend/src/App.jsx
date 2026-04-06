@@ -8,10 +8,12 @@ import Schedules from "./pages/Schedules";
 import Alerts from "./pages/Alerts";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
+import { PageProvider } from "./contexts/PageContext";
 
 function App() {
   return (
-    <BrowserRouter>
+    <PageProvider>
+      <BrowserRouter>
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Dashboard />} />
@@ -25,7 +27,8 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
-  );
+  </PageProvider>
+);
 }
 
 export default App;

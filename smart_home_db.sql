@@ -36,16 +36,8 @@ CREATE TABLE `devices` (
   `current_status` varchar(10) DEFAULT 'OFF'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `devices`
---
-
 INSERT INTO `devices` (`id`, `feed_key`, `name`, `room`, `type`, `current_status`) VALUES
-(1, 'device-1', 'den-phong-khach', 'Phòng khách', 'Light', 'OFF'),
-(2, 'device-2', 'den-phong-ngu', 'Phòng ngủ', 'Light', 'OFF'),
-(3, 'device-3', 'quat-tran-pk', 'Phòng khách', 'Fan', 'ON'),
-(4, 'device-4', 'khoa-cua', 'Cổng', 'Lock', 'OFF'),
-(5, 'device-5', 'camera-an-ninh', 'Sân trước', 'Camera', 'OFF');
+(1, 'fan', 'Quạt', 'Phòng khách', 'Fan', 'OFF');
 
 -- --------------------------------------------------------
 
@@ -76,14 +68,6 @@ CREATE TABLE `sensor_data` (
   `motion_detected` tinyint(1) DEFAULT NULL,
   `recorded_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `sensor_data`
---
-
-INSERT INTO `sensor_data` (`id`, `device_id`, `temperature`, `humidity`, `motion_detected`, `recorded_at`) VALUES
-(1, 1, 45, NULL, NULL, '2026-04-03 09:09:16'),
-(2, 1, 10, NULL, NULL, '2026-04-03 09:19:58');
 
 -- --------------------------------------------------------
 
