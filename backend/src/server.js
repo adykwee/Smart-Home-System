@@ -3,34 +3,68 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const app = require("./app");
-require("./config/database"); // Kích hoạt kết nối DB
-const mqttClient = require("./config/mqtt"); // Kích hoạt MQTT
-const DeviceModel = require("./models/deviceModel");
-const SensorDataModel = require("./models/sensorDataModel");
+const connectDB = require("./config/database");
+const mqttClient = require("./config/mqtt");
+const Device = require("./models/deviceModel");
+const SensorData = require("./models/sensorDataModel");
+const alertEngine = require("./services/alertEngine");
+
+connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-// Khởi tạo HTTP Server từ Express App
 const server = http.createServer(app);
 
-// Khởi tạo Socket.IO
 const io = new Server(server, { cors: { origin: "*" } });
 
-// Lắng nghe dữ liệu real-time từ MQTT để bắn sang Web qua Socket.IO
-mqttClient.on("message", (topic, message) => {
-  const data = message.toString();
-  const feed = topic.split("/").pop(); // Lấy tên feed từ topic (vd: nhiet-do)
+mqttClient.on("message", async (topic, message) => {
+  try {
+    const data = message.toString();
+    const feed = topic.split("/").pop(); 
+    
+    // Bỏ qua nếu feed chỉ toàn là số (đây thường là ID hệ thống của Adafruit, không phải Key)
+    if (/^\d+$/.test(feed)) return;
 
-  // Lưu vào DB
-  if (feed === "temperature-sensor") {
-    SensorDataModel.addTemperature(1, parseFloat(data)).catch((err) => console.error("Lỗi sensor_data:", err));
-  } else if (feed === "fan") {
-    const status = data === '1' ? 'ON' : 'OFF';
-    DeviceModel.updateStatusByFeed(feed, status).catch((err) => console.error("Lỗi devices:", err));
+    console.log(`[MQTT RECEIVE] Topic: ${topic} | Feed: ${feed} | Data: ${data}`);
+
+    // Tìm thiết bị trong DB theo feed_key
+    let device = await Device.findOne({ feed_key: feed });
+    
+    // Nếu chưa có thiết bị trong DB, tự động tạo mới (Seed data)
+    if (!device) {
+       device = await Device.create({
+         feed_key: feed,
+         name: feed,
+         type: feed.includes('sensor') ? 'Sensor' : 'Actuator'
+       });
+       console.log(`Đã tự động tạo thiết bị mới: ${feed}`);
+    }
+
+    if (device.type === 'Sensor' || feed.includes('sensor')) {
+      const numericValue = parseFloat(data);
+      // Lưu vào SensorData
+      await SensorData.create({
+        device_id: device._id,
+        temperature: feed.includes('temperature') ? numericValue : undefined,
+        humidity: feed.includes('humidity') ? numericValue : undefined
+      });
+      
+      // Cập nhật giá trị mới nhất vào Device để khi load trang không bị mất
+      await Device.findByIdAndUpdate(device._id, { current_status: data });
+
+      // Kiểm tra ngưỡng
+      await alertEngine.checkThresholds(device._id, feed, numericValue, io);
+
+    } else {
+      const status = data === '1' ? 'ON' : 'OFF';
+      await Device.findByIdAndUpdate(device._id, { current_status: status });
+    }
+
+    // Bắn dữ liệu realtime
+    io.emit("realtime_data", { feed: feed, value: data });
+  } catch (error) {
+    console.error("Lỗi xử lý MQTT message:", error);
   }
-
-  // Bắn dữ liệu cho tất cả Client đang mở Web
-  io.emit("realtime_data", { feed: feed, value: data });
 });
 
 io.on("connection", (socket) => {
@@ -38,7 +72,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("User đã ngắt kết nối"));
 });
 
-// Chạy Server
 server.listen(PORT, () => {
   console.log(`Server Backend đang chạy tại http://localhost:${PORT}`);
 });

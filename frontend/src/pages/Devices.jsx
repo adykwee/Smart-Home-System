@@ -72,6 +72,43 @@ export default function Devices() {
     }
   };
 
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', room: '', type: '' });
+
+  const handleEdit = (device) => {
+    setEditingDevice(device);
+    setEditForm({
+      name: device.name,
+      room: device.room || '',
+      type: device.type
+    });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const id = editingDevice._id || editingDevice.id;
+    try {
+      const res = await axios.patch(`${API_URL}/api/v1/devices/${id}`, editForm);
+      setDevices(prev => prev.map(d => (d._id || d.id) === id ? res.data.data : d));
+      setEditingDevice(null);
+    } catch (err) {
+      console.error("Lỗi khi cập nhật thiết bị:", err);
+      alert("Không thể cập nhật thiết bị!");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa thiết bị này khỏi hệ thống?")) return;
+    
+    try {
+      await axios.delete(`${API_URL}/api/v1/devices/${id}`);
+      setDevices(prev => prev.filter(d => (d._id || d.id) !== id));
+    } catch (err) {
+      console.error("Lỗi khi xóa thiết bị:", err);
+      alert("Không thể xóa thiết bị. Vui lòng thử lại!");
+    }
+  };
+
   if (loading && devices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 gap-4">
@@ -94,16 +131,80 @@ export default function Devices() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {devices.map((device) => (
-            <DeviceCard
-              key={device.id}
-              device={device}
-              onToggle={handleToggle}
-              isUpdating={updatingId === device.id}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {devices.map((device) => (
+              <DeviceCard
+                key={device._id || device.id}
+                device={device}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                isUpdating={updatingId === (device._id || device.id)}
+              />
+            ))}
+          </div>
+
+          {/* Edit Modal */}
+          {editingDevice && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">
+                <h3 className="text-2xl font-bold text-slate-800 mb-6">Chỉnh sửa thiết bị</h3>
+                <form onSubmit={handleUpdate} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Tên thiết bị</label>
+                    <input 
+                      type="text" 
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      placeholder="VD: Cảm biến phòng khách"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Phòng</label>
+                    <input 
+                      type="text" 
+                      value={editForm.room}
+                      onChange={(e) => setEditForm({...editForm, room: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      placeholder="VD: Phòng khách, Ban công..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Loại thiết bị</label>
+                    <select 
+                      value={editForm.type}
+                      onChange={(e) => setEditForm({...editForm, type: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                    >
+                      <option value="Sensor">Sensor (Cảm biến)</option>
+                      <option value="Actuator">Actuator (Điều khiển)</option>
+                      <option value="Fan">Fan (Quạt)</option>
+                      <option value="Light">Light (Đèn)</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button 
+                      type="button"
+                      onClick={() => setEditingDevice(null)}
+                      className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      Hủy
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-1 py-3 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
+                    >
+                      Lưu thay đổi
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

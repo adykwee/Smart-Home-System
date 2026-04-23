@@ -1,10 +1,10 @@
-const DeviceModel = require("../models/deviceModel");
+const Device = require("../models/deviceModel");
 const mqttClient = require("../config/mqtt");
 
 const deviceController = {
   getAll: async (req, res, next) => {
     try {
-      const devices = await DeviceModel.getAll();
+      const devices = await Device.find();
       res.status(200).json(devices);
     } catch (error) { next(error); }
   },
@@ -20,23 +20,35 @@ const deviceController = {
         if (err) return res.status(500).json({ error: 'Lỗi MQTT' });
 
         // 2. Cập nhật vào DB
-        await DeviceModel.updateStatus(id, trangThai);
+        await Device.findByIdAndUpdate(id, { current_status: trangThai });
         console.log(`Đã gửi lệnh [${trangThai}] và UPDATE Database cho thiết bị ID: [${id}]`);
-        res.json({ success: true, message: `Thiết bị đã được cật nhật thành ${trangThai}` });
+        res.json({ success: true, message: `Thiết bị đã được cập nhật thành ${trangThai}` });
       });
     } catch (error) { next(error); }
   },
   getById: async (req, res, next) => {
-    try { res.status(200).json({ status: "success", data: {} }); } catch (error) { next(error); }
+    try {
+      const device = await Device.findById(req.params.id);
+      res.status(200).json({ status: "success", data: device });
+    } catch (error) { next(error); }
   },
   create: async (req, res, next) => {
-    try { res.status(201).json({ status: "success", data: {} }); } catch (error) { next(error); }
+    try {
+      const newDevice = await Device.create(req.body);
+      res.status(201).json({ status: "success", data: newDevice });
+    } catch (error) { next(error); }
   },
   update: async (req, res, next) => {
-    try { res.status(200).json({ status: "success", data: {} }); } catch (error) { next(error); }
+    try {
+      const updatedDevice = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      res.status(200).json({ status: "success", data: updatedDevice });
+    } catch (error) { next(error); }
   },
   delete: async (req, res, next) => {
-    try { res.status(200).json({ status: "success", message: "Deleted" }); } catch (error) { next(error); }
+    try {
+      await Device.findByIdAndDelete(req.params.id);
+      res.status(200).json({ status: "success", message: "Deleted" });
+    } catch (error) { next(error); }
   }
 };
 

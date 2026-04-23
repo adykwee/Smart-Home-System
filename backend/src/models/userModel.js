@@ -1,11 +1,9 @@
-const db = require("../config/database");
+const mongoose = require("mongoose");
 
-const UserModel = {
-  // Demo khung:
-  // findById: async (id) => {
-  //   const [rows] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
-  //   return rows[0];
-  // }
-};
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
 
-module.exports = UserModel;
+const User = mongoose.model("User", userSchema);
+module.exports = User;

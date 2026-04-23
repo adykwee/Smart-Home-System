@@ -1,18 +1,12 @@
-const db = require("../config/database");
+const mongoose = require("mongoose");
 
-const DeviceModel = {
-    getAll: async () => {
-        const [rows] = await db.query("SELECT * FROM devices");
-        return rows;
-    },
-    updateStatus: async (id, status) => {
-        const [result] = await db.query("UPDATE devices SET current_status = ? WHERE id = ?", [status, id]);
-        return result;
-    },
-    updateStatusByFeed: async (feedKey, status) => {
-        const [result] = await db.query("UPDATE devices SET current_status = ? WHERE feed_key = ?", [status, feedKey]);
-        return result;
-    }
-};
+const deviceSchema = new mongoose.Schema({
+  feed_key: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  room: { type: String },
+  type: { type: String },
+  current_status: { type: String, default: "OFF" }
+});
 
-module.exports = DeviceModel;
+const Device = mongoose.model("Device", deviceSchema);
+module.exports = Device;

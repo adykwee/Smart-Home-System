@@ -1,10 +1,50 @@
+const Threshold = require("../models/thresholdModel");
+const SystemLog = require("../models/systemLogModel");
+
 const alertEngine = {
-  // Hàm này sẽ dùng để kiểm tra dữ liệu cảm biến mới với các rule trong bảng `thresholds`
-  checkThresholds: async (sensorData) => {
-    // Logic của bạn:
-    // 1. Quét tìm tất cả threshold ứng với device_id
-    // 2. So sánh nhiệt độ/độ ẩm..
-    // 3. Nếu lố ngưỡng thì ném vào bảng `system_logs` hoặc kích hoạt đèn còi...
+  checkThresholds: async (deviceId, feedName, value, io) => {
+    try {
+      const numericValue = parseFloat(value);
+      if (isNaN(numericValue)) return;
+
+      const thresholds = await Threshold.find({ device_id: deviceId });
+      
+      for (const threshold of thresholds) {
+        let isViolated = false;
+        let reason = "";
+
+        if (threshold.min_value !== undefined && numericValue < threshold.min_value) {
+          isViolated = true;
+          reason = `Giá trị ${feedName} (${numericValue}) thấp hơn ngưỡng cho phép (${threshold.min_value})`;
+        } else if (threshold.max_value !== undefined && numericValue > threshold.max_value) {
+          isViolated = true;
+          reason = `Giá trị ${feedName} (${numericValue}) vượt quá ngưỡng cho phép (${threshold.max_value})`;
+        }
+
+        if (isViolated) {
+          // Ghi log vào DB
+          const log = await SystemLog.create({
+            event_type: "ALERT",
+            description: reason,
+            device_id: deviceId
+          });
+
+          console.log(`[CẢNH BÁO] ${reason}`);
+
+          // Bắn sự kiện realtime sang frontend
+          if (io) {
+            io.emit("threshold_alert", {
+              message: reason,
+              device_id: deviceId,
+              value: numericValue,
+              threshold: threshold
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi trong alertEngine:", error);
+    }
   }
 };
 
