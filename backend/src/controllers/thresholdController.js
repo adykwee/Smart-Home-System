@@ -15,8 +15,16 @@ const thresholdController = {
   },
   create: async (req, res, next) => {
     try {
-      const newThreshold = await Threshold.create(req.body);
-      res.status(201).json({ status: "success", data: newThreshold });
+      const { device_id, metric_type, min_value, max_value } = req.body;
+      
+      // Tìm và cập nhật nếu đã tồn tại, nếu chưa thì tạo mới
+      const threshold = await Threshold.findOneAndUpdate(
+        { device_id, metric_type },
+        { min_value, max_value },
+        { upsert: true, new: true, runValidators: true }
+      );
+      
+      res.status(201).json({ status: "success", data: threshold });
     } catch (error) { next(error); }
   },
   update: async (req, res, next) => {
