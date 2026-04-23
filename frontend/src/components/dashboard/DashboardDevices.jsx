@@ -1,6 +1,8 @@
 import { ChevronDown, ChevronRight, Refrigerator, Router, Speaker, LampDesk, Thermometer, Droplets, Sun, Zap, HelpCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function DashboardDevices({ devicesState, toggleDevice, sensorValues = {}, dbDevices = [] }) {
+  const navigate = useNavigate();
   
   // Hàm xác định cấu hình (Icon, Màu, Đơn vị) dựa trên loại và tên thiết bị
   const getDeviceConfig = (device) => {
@@ -36,24 +38,36 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
     return { icon: Zap, bg: 'bg-slate-500', label: 'Thiết bị' };
   };
 
+  // Sắp xếp: Ưu tiên Sensor lên đầu, sau đó giới hạn 4 thiết bị
+  const displayDevices = [...dbDevices]
+    .sort((a, b) => {
+      const aIsSensor = a.type === 'Sensor' || a.feed_key.includes('sensor');
+      const bIsSensor = b.type === 'Sensor' || b.feed_key.includes('sensor');
+      if (aIsSensor && !bIsSensor) return -1;
+      if (!aIsSensor && bIsSensor) return 1;
+      return 0;
+    })
+    .slice(0, 4);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-slate-800">Devices</h3>
-        <div className="flex items-center gap-2">
-          <button className="text-xs font-semibold text-slate-600 bg-white px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm">
-            TẤT CẢ <ChevronDown size={14} />
-          </button>
-        </div>
+        <button 
+          onClick={() => navigate('/devices')}
+          className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-indigo-100 transition-colors"
+        >
+          View All <ChevronRight size={14} />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {dbDevices.length === 0 ? (
+        {displayDevices.length === 0 ? (
           <div className="col-span-2 py-10 text-center text-slate-400 italic text-sm bg-white rounded-3xl border border-dashed border-slate-200">
-            Chưa có thiết bị nào trong Database.
+            Chưa có thiết bị nào.
           </div>
         ) : (
-          dbDevices.map(device => {
+          displayDevices.map(device => {
             const config = getDeviceConfig(device);
             const isSensor = device.type === 'Sensor' || device.feed_key.includes('sensor');
             const deviceId = device._id || device.id;
@@ -83,12 +97,12 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
                   )}
                 </div>
                 
-                <div className="mt-auto z-10">
+                <div className="mt-auto z-10 overflow-hidden">
                   <p className="text-[10px] text-white/70 font-bold uppercase tracking-wider">
                     {config.label}
                   </p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold text-white truncate max-w-[80px]">
+                    <span className="text-sm font-bold text-white truncate max-w-[70px]">
                       {device.name}
                     </span>
                     {isSensor && (
