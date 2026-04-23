@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [activeDevice, setActiveDevice] = useState('Temperature');
   const [sensorValues, setSensorValues] = useState({});
   const [devicesState, setDevicesState] = useState({});
+  const [dbDevices, setDbDevices] = useState([]);
 
   useEffect(() => {
     setTitle(""); 
@@ -48,6 +49,7 @@ export default function Dashboard() {
       try {
         const res = await fetch(`${SOCKET_URL}/api/v1/devices`);
         const devices = await res.json();
+        setDbDevices(devices);
         
         const initialSensors = {};
         const initialActuators = {};
@@ -61,14 +63,7 @@ export default function Dashboard() {
         });
         
         setSensorValues(initialSensors);
-        // Map common names for the UI hardcoded cards
-        setDevicesState({
-          Refrigerator: initialActuators['refrigerator'] || true,
-          Router: initialActuators['router'] || true,
-          'Music System': initialActuators['music-system'] || true,
-          Lamps: initialActuators['lamps'] || true,
-          ...initialActuators
-        });
+        setDevicesState(initialActuators);
       } catch (err) {
         console.error("Error fetching initial devices:", err);
       }
@@ -88,8 +83,28 @@ export default function Dashboard() {
     return () => socket.disconnect();
   }, [setTitle]);
 
-  const toggleDevice = (device) => {
-    setDevicesState(prev => ({ ...prev, [device]: !prev[device] }));
+  const toggleDevice = async (deviceId) => {
+    const device = dbDevices.find(d => (d._id || d.id) === deviceId);
+    if (!device) return;
+
+    const newStatus = !devicesState[deviceId];
+    
+    try {
+      // Gọi API điều khiển thật
+      await fetch(`${SOCKET_URL}/api/v1/devices/control`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: deviceId,
+          feedKey: device.feed_key,
+          trangThai: newStatus ? 'ON' : 'OFF'
+        })
+      });
+
+      setDevicesState(prev => ({ ...prev, [deviceId]: newStatus }));
+    } catch (err) {
+      console.error("Lỗi điều khiển thiết bị:", err);
+    }
   };
 
   return (
@@ -109,6 +124,7 @@ export default function Dashboard() {
           devicesState={devicesState} 
           toggleDevice={toggleDevice} 
           sensorValues={sensorValues} 
+          dbDevices={dbDevices}
         />
         <Members members={members} />
         <PowerChart chartData={chartData} />
