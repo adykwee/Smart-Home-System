@@ -107,13 +107,17 @@ export default function Dashboard() {
     }
   };
 
+  // Tìm giá trị nhiệt độ và độ ẩm để hiện lên Header
+  const currentTemp = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('temp') || k.toLowerCase().includes('nhiet'))?.[1];
+  const currentHumid = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('humid') || k.toLowerCase().includes('doam'))?.[1];
+
   return (
     <div className="w-full flex flex-col xl:flex-row gap-8">
       
       {/* CỘT TRÁI (70%) */}
       <div className="flex-1 flex flex-col gap-8">
         <WelcomeBanner />
-        <RoomHeader />
+        <RoomHeader temp={currentTemp} humidity={currentHumid} />
         <QuickControls activeDevice={activeDevice} setActiveDevice={setActiveDevice} />
         <DialControl targetTemp={targetTemp} setTargetTemp={setTargetTemp} />
       </div>

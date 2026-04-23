@@ -39,7 +39,7 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-slate-800">Thiết bị trong nhà</h3>
+        <h3 className="text-lg font-bold text-slate-800">Devices</h3>
         <div className="flex items-center gap-2">
           <button className="text-xs font-semibold text-slate-600 bg-white px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm">
             TẤT CẢ <ChevronDown size={14} />
