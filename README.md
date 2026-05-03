@@ -1,6 +1,6 @@
 # Hệ Thống Nhà Thông Minh (Smart Home System)
 
-Dự án Hệ thống quản lý Smart Home xây dựng dựa trên kiến trúc tiên tiến phân tách rõ Frontend (React/Vite) và Backend (Node.js/Express) với ngôn ngữ cơ sở dữ liệu MySQL (XAMPP).
+Dự án Hệ thống quản lý Smart Home xây dựng dựa trên kiến trúc tiên tiến phân tách rõ Frontend (React/Vite) và Backend (Node.js/Express) với cơ sở dữ liệu MongoDB Atlas (Cloud).
 
 ## 1. Cấu Trúc Mã Nguồn (Project Structure)
 Dự án được ứng dụng chuẩn kiến trúc **MVC** (Model - View - Controller) cho Backend và kiến trúc **Component-based** cho Frontend.
@@ -9,7 +9,7 @@ Dự án được ứng dụng chuẩn kiến trúc **MVC** (Model - View - Cont
 Smart-Home-System/
 ├── backend/                       # RESTful API Server (Node.js/Express)
 │   ├── src/
-│   │   ├── models/                # Logic tương tác Database MySQL (của 6 bảng cốt lõi)
+│   │   ├── models/                # Logic tương tác Database MongoDB (Mongoose Schema)
 │   │   ├── controllers/           # Xử lý logic nghiệp vụ và điều hướng API 
 │   │   ├── routes/                # Bản đồ URL của API (vd: /api/v1/devices)
 │   │   └── services/ & middlewares/  # Cron_job, AlertEngine, Auth (JWT), RateLimit
@@ -27,13 +27,12 @@ Smart-Home-System/
 
 ### Môi trường khuyến nghị:
 - **Node.js**: >= 18.x
-- **XAMPP** (có kèm MySQL/MariaDB cài sẵn)
+- **MongoDB Atlas** (Tài khoản Cloud)
 
-### Bước 1: Setup Dữ liệu (MySQL qua XAMPP)
-1. Bật **Apache** và **MySQL** trên bảng điều khiển của XAMPP Control Panel.
-2. Truy cập vào phpMyAdmin qua trình duyệt: http://localhost/phpmyadmin
-3. Tạo CSDL mang tên `smart_home_db`.
-4. Import tệp thiết kế `smart_home_db.sql` bên ngoài vào hệ thống MySQL để khởi tạo 6 bảng tiêu chuẩn.
+### Bước 1: Setup Dữ liệu (MongoDB Atlas)
+1. Tạo tài khoản trên [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register).
+2. Tạo một Cluster miễn phí và thiết lập Database User & Network Access (Allow from anywhere: `0.0.0.0/0`).
+3. Lấy chuỗi kết nối (Connection String) để cấu hình vào file `.env` ở bước sau.
 
 ### Bước 2: Setup Backend
 Mở một cửa sổ Terminal (hoặc cmd):
@@ -43,7 +42,7 @@ npm install
 
 # Đổi đuôi tệp thành .env, cấu hình tham số:
 cp .env.example .env
-# (Lưu ý: Mặc định XAMPP sử dụng user 'root' và password rỗng. Các file cấu hình đã được thiết lập sẵn)
+# (Lưu ý: Cập nhật biến MONGODB_URI bằng chuỗi kết nối lấy từ MongoDB Atlas ở Bước 1)
 
 # Bật máy chủ kết nối
 npm run dev

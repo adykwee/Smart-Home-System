@@ -16,7 +16,7 @@ export default function Devices() {
   const { setTitle } = usePage();
 
   useEffect(() => {
-    setTitle("Quản lý thiết bị");
+    setTitle("Thiết bị");
   }, [setTitle]);
 
   const [devices, setDevices] = useState([]);
@@ -28,7 +28,7 @@ export default function Devices() {
     try {
       if (showLoading) setLoading(true);
       const response = await axios.get(`${API_URL}/api/v1/devices`);
-      setDevices(response.data);
+      setDevices(response.data.data || response.data);
       setError(null);
     } catch (err) {
       console.error("Lỗi khi tải thiết bị:", err);
@@ -51,18 +51,18 @@ export default function Devices() {
 
   const handleToggle = async (device) => {
     const newStatus = device.current_status === "ON" ? "OFF" : "ON";
-    setUpdatingId(device.id);
+    setUpdatingId(device._id);
 
     try {
       await axios.post(`${API_URL}/api/v1/devices/control`, {
-        id: device.id,
+        id: device._id,
         feedKey: device.feed_key,
         trangThai: newStatus
       });
 
       // Cập nhật state nội bộ ngay lập tức để UX mượt
       setDevices(prev => prev.map(d =>
-        d.id === device.id ? { ...d, current_status: newStatus } : d
+        d._id === device._id ? { ...d, current_status: newStatus } : d
       ));
     } catch (err) {
       console.error("Lỗi điều khiển:", err);
@@ -97,10 +97,10 @@ export default function Devices() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {devices.map((device) => (
             <DeviceCard
-              key={device.id}
+              key={device._id}
               device={device}
               onToggle={handleToggle}
-              isUpdating={updatingId === device.id}
+              isUpdating={updatingId === device._id}
             />
           ))}
         </div>

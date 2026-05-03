@@ -11,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Để Express hiểu được JSON body
 
+const { apiLimiter } = require('./middlewares/rateLimit');
+app.use(apiLimiter); // Áp dụng giới hạn chung cho toàn bộ API
+
 // Mount Routes
 app.use("/api/v1", routesV1);
 

@@ -1,24 +1,15 @@
-const mysql = require("mysql2/promise");
+const mongoose = require('mongoose');
 require("dotenv").config();
 
-// Khởi tạo Pool kết nối đến MySQL (XAMPP mặc định)
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "smart_home_db",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    console.log(`Đã kết nối tới MongoDB: ${conn.connection.host}`);
+  } catch (err) {
+    console.error(`Lỗi kết nối MongoDB: ${err.message}`);
+    process.exit(1);
+  }
+};
 
-pool.getConnection()
-  .then((conn) => {
-    console.log("Đã kết nối tới Cơ sở dữ liệu MySQL");
-    conn.release();
-  })
-  .catch((err) => {
-    console.error("Lỗi kết nối MySQL:", err);
-  });
-
-module.exports = pool;
+// Export the function to be called in server.js
+module.exports = connectDB;

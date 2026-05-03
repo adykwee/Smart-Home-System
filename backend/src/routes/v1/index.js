@@ -5,11 +5,15 @@ const sensorDataRoutes = require("./sensorDataRoutes");
 const systemLogRoutes = require("./systemLogRoutes");
 const scheduleRoutes = require("./scheduleRoutes");
 const thresholdRoutes = require("./thresholdRoutes");
+const { protect } = require("../../middlewares/auth");
 
 const router = express.Router();
 
-// Định tuyến dựa trên cấu trúc CSDL SQL
+// Public & partially protected route
 router.use("/users", userRoutes);
+
+// Fully protected routes
+router.use(protect);
 router.use("/devices", deviceRoutes);
 router.use("/sensor-data", sensorDataRoutes);
 router.use("/system-logs", systemLogRoutes);

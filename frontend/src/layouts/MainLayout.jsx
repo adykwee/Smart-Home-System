@@ -12,18 +12,18 @@ import {
   LogOut,
 } from "lucide-react";
 import { usePage } from "../contexts/PageContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function MainLayout() {
   const { title } = usePage();
+  const { user, logout } = useAuth();
   const links = [
     { name: "Dashboard", path: "/", icon: LayoutGrid },
-    { name: "Trạng thái thiết bị", path: "/device-status", icon: Activity },
+    { name: "Trạng thái", path: "/device-status", icon: Activity },
     { name: "Thiết bị", path: "/devices", icon: Cpu },
     { name: "Nhật ký", path: "/logs", icon: FileText },
-    { name: "Lịch trình", path: "/schedules", icon: Calendar },
-    { name: "Cảnh báo", path: "/alerts", icon: AlertTriangle },
+    { name: "Ngưỡng", path: "/thresholds", icon: AlertTriangle },
     { name: "Người dùng", path: "/users", icon: Users },
-    { name: "Cài đặt", path: "/settings", icon: Settings },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function MainLayout() {
           Chính
         </div>
         <nav className="flex-1 px-3 space-y-1">
-          {links.slice(0, 6).map((link) => {
+          {links.slice(0, 5).map((link) => {
             const Icon = link.icon;
             return (
               <NavLink
@@ -63,7 +63,10 @@ export default function MainLayout() {
           <div className="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-8 mb-3">
             Quản trị
           </div>
-          {links.slice(6).map((link) => {
+          {links.slice(5).map((link) => {
+            // Ẩn menu Người dùng nếu không phải admin
+            if (link.path === "/users" && user?.role !== "admin") return null;
+
             const Icon = link.icon;
             return (
               <NavLink
@@ -92,7 +95,6 @@ export default function MainLayout() {
             </div>
             <span className="text-sm font-semibold text-emerald-400">Hệ thống hoạt động</span>
           </div>
-          <span className="text-xs text-slate-400 ml-4.5">13 thiết bị đang online</span>
         </div>
       </aside>
 
@@ -124,7 +126,10 @@ export default function MainLayout() {
             </div>
 
             {/* Log Out */}
-            <button className="flex items-center gap-2 text-rose-500 text-sm font-semibold ml-2 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors">
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 text-rose-500 text-sm font-semibold ml-2 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors"
+            >
               <LogOut size={18} strokeWidth={2.5} />
               <span className="hidden sm:inline">Đăng xuất</span>
             </button>
