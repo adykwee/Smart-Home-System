@@ -17,7 +17,12 @@ export default function Logs() {
     try {
       setLoading(true);
       const res = await apiClient.get("/system-logs");
+<<<<<<< Updated upstream
       setLogs(res.data.data || []);
+=======
+      const data = res.data;
+      setLogs(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Lỗi tải log:", error);
     } finally {

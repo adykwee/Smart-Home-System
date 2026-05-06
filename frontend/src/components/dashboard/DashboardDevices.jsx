@@ -39,10 +39,17 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
   };
 
   // Sắp xếp: Ưu tiên Sensor lên đầu, sau đó giới hạn 4 thiết bị
+<<<<<<< Updated upstream
   const displayDevices = [...dbDevices]
     .sort((a, b) => {
       const aIsSensor = a.type === 'Sensor' || a.feed_key.includes('sensor');
       const bIsSensor = b.type === 'Sensor' || b.feed_key.includes('sensor');
+=======
+  const displayDevices = (Array.isArray(dbDevices) ? [...dbDevices] : [])
+    .sort((a, b) => {
+      const aIsSensor = a.type === 'Sensor' || a.feed_key?.includes('sensor');
+      const bIsSensor = b.type === 'Sensor' || b.feed_key?.includes('sensor');
+>>>>>>> Stashed changes
       if (aIsSensor && !bIsSensor) return -1;
       if (!aIsSensor && bIsSensor) return 1;
       return 0;
@@ -69,7 +76,11 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
         ) : (
           displayDevices.map(device => {
             const config = getDeviceConfig(device);
+<<<<<<< Updated upstream
             const isSensor = device.type === 'Sensor' || device.feed_key.includes('sensor');
+=======
+            const isSensor = device.type === 'Sensor' || device.feed_key?.includes('sensor');
+>>>>>>> Stashed changes
             const deviceId = device._id || device.id;
             const currentVal = isSensor ? (sensorValues[device.feed_key] || device.current_status) : devicesState[deviceId];
 

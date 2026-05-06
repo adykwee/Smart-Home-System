@@ -1,4 +1,9 @@
+<<<<<<< Updated upstream
 import { NavLink, useLocation } from "react-router-dom";
+=======
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+>>>>>>> Stashed changes
 import {
   Home,
   LayoutGrid,
@@ -12,6 +17,16 @@ import {
 
 export default function Sidebar() {
   const location = useLocation();
+<<<<<<< Updated upstream
+=======
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+>>>>>>> Stashed changes
   const links = [
     { name: "Dashboard", path: "/", icon: Home },
     { name: "Thiết bị", path: "/devices", icon: LayoutGrid },
@@ -33,8 +48,11 @@ export default function Sidebar() {
             <div key={link.path} className="relative w-full flex justify-end h-16">
               {isActive && (
                 <>
+<<<<<<< Updated upstream
                   <div className="absolute -top-6 right-0 w-6 h-6 bg-transparent rounded-br-3xl shadow-[0_12px_0_0_#f4f5f9]"></div>
                   <div className="absolute -bottom-6 right-0 w-6 h-6 bg-transparent rounded-tr-3xl shadow-[0_-12px_0_0_#f4f5f9]"></div>
+=======
+>>>>>>> Stashed changes
                   <div className="absolute top-0 right-0 w-[calc(100%-16px)] h-full bg-[#f4f5f9] rounded-l-[24px]"></div>
                 </>
               )}
@@ -55,7 +73,15 @@ export default function Sidebar() {
       </nav>
 
       <div className="w-full flex justify-center pb-4">
+<<<<<<< Updated upstream
         <button className="text-white/60 hover:text-white transition-colors p-3" title="Đăng xuất">
+=======
+        <button 
+          onClick={handleLogout}
+          className="text-white/60 hover:text-white transition-colors p-3" 
+          title="Đăng xuất"
+        >
+>>>>>>> Stashed changes
           <LogOut size={24} strokeWidth={2} />
         </button>
       </div>

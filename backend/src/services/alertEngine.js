@@ -4,6 +4,7 @@ const SystemLog = require("../models/systemLogModel");
 const alertEngine = {
   checkThresholds: async (deviceId, feedName, value, io) => {
     try {
+<<<<<<< Updated upstream
       const numericValue = parseFloat(value);
       if (isNaN(numericValue)) return;
 
@@ -12,6 +13,11 @@ const alertEngine = {
       for (const threshold of thresholds) {
         let isViolated = false;
         let reason = "";
+=======
+      // 1. Lấy cấu hình ngưỡng của thiết bị từ DB
+      // Note: Ở đây chúng ta tạm quy ước thiết bị sensor có chung 1 metric_type là tên feedKey
+      const thresholds = await Threshold.find({ device_id: deviceId.toString() });
+>>>>>>> Stashed changes
 
         if (threshold.min_value !== undefined && numericValue < threshold.min_value) {
           isViolated = true;
@@ -31,10 +37,15 @@ const alertEngine = {
 
           console.log(`[CẢNH BÁO] ${reason}`);
 
+<<<<<<< Updated upstream
           // Bắn sự kiện realtime sang frontend
           if (io) {
             io.emit("threshold_alert", {
               message: reason,
+=======
+            // 3. Emit Socket.IO (Observer Pattern)
+            io.emit('threshold_alert', {
+>>>>>>> Stashed changes
               device_id: deviceId,
               value: numericValue,
               threshold: threshold

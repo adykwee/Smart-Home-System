@@ -49,10 +49,19 @@ export default function Alerts() {
         apiClient.get("/thresholds"),
         apiClient.get("/devices")
       ]);
+<<<<<<< Updated upstream
       setThresholds(tRes.data.data || []);
       // Filter only sensors for thresholds
       const deviceList = Array.isArray(dRes.data) ? dRes.data : dRes.data.data || [];
       setDevices(deviceList.filter(d => d.type === "Sensor") || []);
+=======
+      const tData = tRes.data;
+      const dData = dRes.data;
+      setThresholds(Array.isArray(tData?.data) ? tData.data : (Array.isArray(tData) ? tData : []));
+      // Filter only sensors for thresholds
+      const deviceList = Array.isArray(dData?.data) ? dData.data : (Array.isArray(dData) ? dData : []);
+      setDevices(deviceList.filter(d => d.type === "Sensor"));
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Lỗi tải dữ liệu:", error);
     } finally {
@@ -99,6 +108,10 @@ export default function Alerts() {
   };
 
   const getIcon = (type) => {
+<<<<<<< Updated upstream
+=======
+    if (!type) return <Zap className="text-slate-400" />;
+>>>>>>> Stashed changes
     if (type.toLowerCase().includes("temp")) return <Thermometer className="text-orange-400" />;
     if (type.toLowerCase().includes("humid")) return <Droplets className="text-blue-400" />;
     return <Zap className="text-yellow-400" />;

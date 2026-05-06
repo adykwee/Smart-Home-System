@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "../services/api";
 import {
   RefreshCw,
   LayoutGrid,
@@ -10,7 +10,6 @@ import { usePage } from "../contexts/PageContext";
 
 // Base URL từ env
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
 
 export default function Devices() {
   const { setTitle } = usePage();
@@ -27,8 +26,14 @@ export default function Devices() {
   const fetchDevices = async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
+<<<<<<< Updated upstream
       const response = await axios.get(`${API_URL}/api/v1/devices`);
       setDevices(response.data);
+=======
+      const response = await apiClient.get('/devices');
+      const data = response.data;
+      setDevices(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
+>>>>>>> Stashed changes
       setError(null);
     } catch (err) {
       console.error("Lỗi khi tải thiết bị:", err);
@@ -51,18 +56,31 @@ export default function Devices() {
 
   const handleToggle = async (device) => {
     const newStatus = device.current_status === "ON" ? "OFF" : "ON";
+<<<<<<< Updated upstream
     setUpdatingId(device.id);
 
     try {
       await axios.post(`${API_URL}/api/v1/devices/control`, {
         id: device.id,
+=======
+    const deviceId = device._id || device.id;
+    setUpdatingId(deviceId);
+
+    try {
+      await apiClient.post('/devices/control', {
+        id: deviceId,
+>>>>>>> Stashed changes
         feedKey: device.feed_key,
         trangThai: newStatus
       });
 
       // Cập nhật state nội bộ ngay lập tức để UX mượt
       setDevices(prev => prev.map(d =>
+<<<<<<< Updated upstream
         d.id === device.id ? { ...d, current_status: newStatus } : d
+=======
+        (d._id || d.id) === deviceId ? { ...d, current_status: newStatus } : d
+>>>>>>> Stashed changes
       ));
     } catch (err) {
       console.error("Lỗi điều khiển:", err);
@@ -88,7 +106,11 @@ export default function Devices() {
     e.preventDefault();
     const id = editingDevice._id || editingDevice.id;
     try {
+<<<<<<< Updated upstream
       const res = await axios.patch(`${API_URL}/api/v1/devices/${id}`, editForm);
+=======
+      const res = await apiClient.put(`/devices/${id}`, editForm);
+>>>>>>> Stashed changes
       setDevices(prev => prev.map(d => (d._id || d.id) === id ? res.data.data : d));
       setEditingDevice(null);
     } catch (err) {
@@ -101,7 +123,11 @@ export default function Devices() {
     if (!window.confirm("Bạn có chắc chắn muốn xóa thiết bị này khỏi hệ thống?")) return;
     
     try {
+<<<<<<< Updated upstream
       await axios.delete(`${API_URL}/api/v1/devices/${id}`);
+=======
+      await apiClient.delete(`/devices/${id}`);
+>>>>>>> Stashed changes
       setDevices(prev => prev.filter(d => (d._id || d.id) !== id));
     } catch (err) {
       console.error("Lỗi khi xóa thiết bị:", err);
@@ -172,6 +198,7 @@ export default function Devices() {
                       placeholder="VD: Phòng khách, Ban công..."
                     />
                   </div>
+<<<<<<< Updated upstream
                   <div>
                     <label className="block text-sm font-semibold text-slate-600 mb-2">Loại thiết bị</label>
                     <select 
@@ -185,6 +212,8 @@ export default function Devices() {
                       <option value="Light">Light (Đèn)</option>
                     </select>
                   </div>
+=======
+>>>>>>> Stashed changes
                   <div className="flex gap-3 pt-4">
                     <button 
                       type="button"

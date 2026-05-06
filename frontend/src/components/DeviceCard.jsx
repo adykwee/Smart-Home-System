@@ -26,7 +26,11 @@ const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
       )}
 
       {/* Action Buttons (Visible on hover) */}
+<<<<<<< Updated upstream
       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+=======
+      <div className="absolute bottom-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+>>>>>>> Stashed changes
         <button 
           onClick={(e) => { e.stopPropagation(); onEdit(device); }}
           className="p-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 shadow-lg shadow-indigo-500/30"

@@ -1,9 +1,16 @@
 import { Droplets, ThermometerSun, ChevronDown } from "lucide-react";
 
+<<<<<<< Updated upstream
 export default function RoomHeader({ temp = "--", humidity = "--" }) {
   return (
     <div className="flex items-center justify-between mt-2">
       <h2 className="text-2xl font-bold text-slate-800">Scarlett's Home</h2>
+=======
+export default function RoomHeader({ temp = "--", humidity = "--", username = "User" }) {
+  return (
+    <div className="flex items-center justify-between mt-2">
+      <h2 className="text-2xl font-bold text-slate-800">{username}'s Home</h2>
+>>>>>>> Stashed changes
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-1 text-slate-600 font-semibold">
           <Droplets size={16} className="text-blue-400" />

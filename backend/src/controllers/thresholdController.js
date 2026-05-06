@@ -15,6 +15,7 @@ const thresholdController = {
   },
   create: async (req, res, next) => {
     try {
+<<<<<<< Updated upstream
       const { device_id, metric_type, min_value, max_value } = req.body;
       
       // Tìm và cập nhật nếu đã tồn tại, nếu chưa thì tạo mới
@@ -24,6 +25,14 @@ const thresholdController = {
         { upsert: true, new: true, runValidators: true }
       );
       
+=======
+      const { device_id, metric_type } = req.body;
+      const threshold = await Threshold.findOneAndUpdate(
+        { device_id, metric_type },
+        req.body,
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+>>>>>>> Stashed changes
       res.status(201).json({ status: "success", data: threshold });
     } catch (error) { next(error); }
   },

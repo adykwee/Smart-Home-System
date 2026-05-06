@@ -8,10 +8,17 @@ export default function Members({ members }) {
         <ChevronRight size={18} className="text-slate-400" />
       </div>
       <div className="flex justify-between items-center px-2">
+<<<<<<< Updated upstream
         {members.map(member => (
           <div key={member.name} className="flex flex-col items-center gap-1">
             <img 
               src={`https://api.dicebear.com/7.x/notionists/svg?seed=${member.seed}&backgroundColor=${member.name === 'Scarlett' ? 'e0e7ff' : 'f1f5f9'}`} 
+=======
+        {members.map((member, index) => (
+          <div key={member.name} className="flex flex-col items-center gap-1">
+            <img 
+              src={`https://api.dicebear.com/7.x/notionists/svg?seed=${member.seed}&backgroundColor=${index === 0 ? 'e0e7ff' : 'f1f5f9'}`} 
+>>>>>>> Stashed changes
               alt={member.name} 
               className="w-10 h-10 rounded-full border border-slate-100"
             />

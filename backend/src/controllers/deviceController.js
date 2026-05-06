@@ -11,6 +11,10 @@ const deviceController = {
   controlDevice: async (req, res, next) => {
     try {
       const { id, feedKey, trangThai } = req.body;
+      if (!id) {
+        return res.status(400).json({ error: "Thiếu thông tin ID thiết bị." });
+      }
+      
       const ADAFRUIT_USERNAME = process.env.AIO_USERNAME;
       const feedUrl = `${ADAFRUIT_USERNAME}/feeds/${feedKey}`;
       const giaTriGuiLen = trangThai === 'ON' ? '1' : '0';
@@ -40,8 +44,13 @@ const deviceController = {
   },
   update: async (req, res, next) => {
     try {
+<<<<<<< Updated upstream
       const updatedDevice = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
       res.status(200).json({ status: "success", data: updatedDevice });
+=======
+      const device = await Device.findByIdAndUpdate({ _id: req.params.id }, req.body, { new: true });
+      res.status(200).json({ status: "success", data: device });
+>>>>>>> Stashed changes
     } catch (error) { next(error); }
   },
   delete: async (req, res, next) => {
