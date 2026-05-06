@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUser({ id: payload.id, role: payload.role });
+        setUser({ id: payload.id, username: payload.username, role: payload.role });
       } catch {
         console.error("Invalid token format");
         logout();

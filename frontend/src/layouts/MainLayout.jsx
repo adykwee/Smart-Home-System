@@ -117,11 +117,11 @@ export default function MainLayout() {
             {/* User Profile */}
             <div className="flex items-center gap-3 cursor-pointer group">
               <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600 ring-2 ring-transparent group-hover:ring-indigo-100 transition">
-                AD
+                {user?.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-bold text-slate-800 leading-tight">Admin</p>
-                <p className="text-xs text-slate-500 leading-tight">Quản trị viên</p>
+                <p className="text-sm font-bold text-slate-800 leading-tight">{user?.username}</p>
+                <p className="text-xs text-slate-500 leading-tight">{user?.role === "admin" ? "Quản trị viên" : "Người dùng"}</p>
               </div>
             </div>
 

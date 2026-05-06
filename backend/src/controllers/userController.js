@@ -2,10 +2,10 @@ const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 
 // Helper để tạo token
-const generateToken = (id, role) => {
+const generateToken = (id, username, role) => {
   // Sử dụng khóa bí mật từ biến môi trường hoặc dự phòng bằng một string mặc định
   const secret = process.env.JWT_SECRET || 'super_secret_key_123';
-  return jwt.sign({ id, role }, secret, {
+  return jwt.sign({ id, username, role }, secret, {
     expiresIn: '1d', // Token hết hạn sau 1 ngày
   });
 };
@@ -78,7 +78,7 @@ const userController = {
             _id: user._id,
             username: user.username,
             role: user.role,
-            token: generateToken(user._id, user.role),
+            token: generateToken(user._id, user.username, user.role),
           }
         });
       } else {
@@ -103,7 +103,7 @@ const userController = {
           _id: user._id,
           username: user.username,
           role: user.role,
-          token: generateToken(user._id, user.role),
+           token: generateToken(user._id, user.username, user.role),
         }
       });
     } catch (error) { next(error); }
