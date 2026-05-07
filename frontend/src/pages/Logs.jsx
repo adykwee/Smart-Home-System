@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePage } from "../contexts/PageContext";
 import apiClient from "../services/api";
-import { Clock, HardDrive, AlertCircle, Info, RefreshCw, ChevronRight } from "lucide-react";
+import { Clock, HardDrive, AlertCircle, Info, RefreshCw, ChevronRight, User as UserIcon } from "lucide-react";
 
 export default function Logs() {
   const { setTitle } = usePage();
@@ -63,8 +63,9 @@ export default function Logs() {
               <thead>
                 <tr className="bg-slate-50/50">
                   <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Thời gian</th>
-                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Thiết bị</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 w-64">Thiết bị</th>
                   <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Trạng thái</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Người thực hiện</th>
                   <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Nội dung chi tiết</th>
                   <th className="px-6 py-5 border-b border-slate-100"></th>
                 </tr>
@@ -112,6 +113,16 @@ export default function Logs() {
                         }`}>
                           <AlertCircle size={12} />
                           {log.event_type === 'ALERT' ? 'Cảnh báo' : 'Thông tin'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded-lg ${log.user_id ? 'bg-indigo-50 text-indigo-500' : 'bg-slate-50 text-slate-400'}`}>
+                            <UserIcon size={14} />
+                          </div>
+                          <span className={`text-sm font-bold ${log.user_id ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                            {log.user_id?.username || "Hệ thống"}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

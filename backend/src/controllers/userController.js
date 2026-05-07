@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const systemLogRepo = require('../repositories/SystemLogRepository');
 
 // Helper để tạo token
 const generateToken = (id, username, role) => {
@@ -37,6 +38,14 @@ const userController = {
         return res.status(400).json({ status: "error", message: "Tên đăng nhập đã tồn tại" });
       }
       const user = await User.create({ username, password, role });
+
+      // Log action
+      await systemLogRepo.createLog({
+        event_type: 'USER_MANAGEMENT',
+        description: `Đã tạo người dùng mới: [${username}] với vai trò [${role}]`,
+        user_id: req.user ? req.user._id : null
+      });
+
       res.status(201).json({ status: "success", data: { _id: user._id, username: user.username, role: user.role } });
     } catch (error) { next(error); }
   },
@@ -52,6 +61,14 @@ const userController = {
       if (role) user.role = role;
       
       await user.save();
+
+      // Log action
+      await systemLogRepo.createLog({
+        event_type: 'USER_MANAGEMENT',
+        description: `Đã cập nhật thông tin người dùng: [${user.username}]`,
+        user_id: req.user ? req.user._id : null
+      });
+
       res.status(200).json({ status: "success", data: { _id: user._id, username: user.username, role: user.role } });
     } catch (error) { next(error); }
   },
@@ -61,6 +78,14 @@ const userController = {
     try {
       const user = await User.findByIdAndDelete(req.params.id);
       if (!user) return res.status(404).json({ status: "error", message: "Không tìm thấy người dùng" });
+
+      // Log action
+      await systemLogRepo.createLog({
+        event_type: 'USER_MANAGEMENT',
+        description: `Đã xóa người dùng: [${user.username}]`,
+        user_id: req.user ? req.user._id : null
+      });
+
       res.status(200).json({ status: "success", message: "Đã xóa người dùng" });
     } catch (error) { next(error); }
   },

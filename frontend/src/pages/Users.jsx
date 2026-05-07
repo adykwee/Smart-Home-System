@@ -11,7 +11,10 @@ import {
   Search, 
   RefreshCw,
   X,
-  Check
+  Check,
+  History,
+  Clock,
+  Activity
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,6 +26,8 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [recentLogs, setRecentLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,7 +41,22 @@ export default function Users() {
   useEffect(() => {
     setTitle("Danh sách thành viên");
     fetchUsers();
+    fetchRecentLogs();
   }, [setTitle]);
+
+  const fetchRecentLogs = async () => {
+    try {
+      setLogsLoading(true);
+      const res = await apiClient.get("/system-logs");
+      const allLogs = res.data?.data || [];
+      // Lấy 10 logs gần nhất
+      setRecentLogs(allLogs.slice(0, 10));
+    } catch (error) {
+      console.error("Lỗi tải nhật ký:", error);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -322,6 +342,62 @@ export default function Users() {
           </div>
         </div>
       )}
+
+      {/* Recent Activity Section */}
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500">
+              <Activity size={20} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800">Hoạt động gần đây</h3>
+          </div>
+          <button 
+            onClick={fetchRecentLogs}
+            className="text-indigo-600 hover:text-indigo-700 font-bold text-sm flex items-center gap-2"
+          >
+            <RefreshCw size={14} className={logsLoading ? "animate-spin" : ""} />
+            Làm mới
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {logsLoading && recentLogs.length === 0 ? (
+            <p className="text-center py-10 text-slate-400 italic">Đang tải hoạt động...</p>
+          ) : recentLogs.length === 0 ? (
+            <p className="text-center py-10 text-slate-400 italic">Chưa có hoạt động nào được ghi nhận.</p>
+          ) : (
+            recentLogs.map((log) => (
+              <div key={log._id} className="flex items-start gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                <div className={`mt-1 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  log.event_type === 'ALERT' ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {log.event_type === 'ALERT' ? <Activity size={16} /> : <Clock size={16} />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-slate-700">
+                      {log.description}
+                    </p>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap bg-slate-50 px-2 py-0.5 rounded-md">
+                      {new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs font-bold text-indigo-500">
+                      {log.user_id?.username || "Hệ thống"}
+                    </span>
+                    <span className="text-slate-300 text-xs">•</span>
+                    <span className="text-xs text-slate-400">
+                      {new Date(log.created_at).toLocaleDateString('vi-VN')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
