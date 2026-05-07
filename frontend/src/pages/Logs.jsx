@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePage } from "../contexts/PageContext";
-import axios from "axios";
-import { FileText, AlertTriangle, Activity, User } from "lucide-react";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import apiClient from "../services/api";
+import { Clock, HardDrive, AlertCircle, Info, RefreshCw, ChevronRight } from "lucide-react";
 
 export default function Logs() {
   const { setTitle } = usePage();
@@ -11,96 +9,133 @@ export default function Logs() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTitle("Nhật ký");
+    setTitle("Nhật Ký Hệ Thống");
     fetchLogs();
   }, [setTitle]);
 
   const fetchLogs = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/v1/system-logs`);
-      setLogs(res.data.data || res.data);
+      setLoading(true);
+      const res = await apiClient.get("/system-logs");
+      const data = res.data;
+      setLogs(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
     } catch (error) {
-      console.error("Lỗi khi tải nhật ký:", error);
+      console.error("Lỗi tải log:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getEventStyle = (type) => {
-    if (type?.includes("CẢNH BÁO")) return { icon: <AlertTriangle size={16} />, cls: "bg-rose-100 text-rose-700" };
-    if (type?.includes("ĐIỀU KHIỂN")) return { icon: <Activity size={16} />, cls: "bg-indigo-100 text-indigo-700" };
-    return { icon: <FileText size={16} />, cls: "bg-slate-100 text-slate-600" };
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-bold text-slate-800">Lịch sử hoạt động</h2>
-            <p className="text-sm text-slate-500">Xem lại các sự kiện đã xảy ra trong hệ thống</p>
+    <div className="w-full h-full p-6 animate-fade-in flex flex-col gap-6">
+      
+      {/* Header Section */}
+      <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+            <HardDrive size={24} />
           </div>
-          <button onClick={fetchLogs} className="px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-            Làm mới
-          </button>
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">Lịch sử sự kiện</h2>
+            <p className="text-sm text-slate-500">Xem lại các cảnh báo và hoạt động của hệ thống</p>
+          </div>
         </div>
+        <button 
+          onClick={fetchLogs} 
+          disabled={loading}
+          className="bg-white border border-slate-200 hover:border-indigo-300 text-slate-600 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all flex items-center gap-2 hover:shadow-md active:scale-95"
+        >
+          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+          Làm mới dữ liệu
+        </button>
+      </div>
 
-        {loading ? (
-          <div className="p-8 text-center text-slate-500">Đang tải dữ liệu...</div>
+      {/* Main Content Card */}
+      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col flex-1">
+        {loading && logs.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-20 gap-4">
+            <RefreshCw size={40} className="animate-spin text-indigo-500" />
+            <p className="font-bold text-slate-400">Đang truy xuất dữ liệu...</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold">Thời gian</th>
-                  <th className="px-6 py-4 font-semibold">Loại sự kiện</th>
-                  <th className="px-6 py-4 font-semibold">Mô tả chi tiết</th>
-                  <th className="px-6 py-4 font-semibold">Người thực hiện</th>
+                <tr className="bg-slate-50/50">
+                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Thời gian</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Thiết bị</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Trạng thái</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Nội dung chi tiết</th>
+                  <th className="px-6 py-5 border-b border-slate-100"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
-                {logs.map((log) => {
-                  const style = getEventStyle(log.event_type);
-                  return (
-                    <tr key={log._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                        {new Date(log.created_at || log.createdAt).toLocaleString("vi-VN")}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${style.cls}`}>
-                          {style.icon}
-                          {log.event_type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600 text-sm">{log.description}</td>
-                      <td className="px-6 py-4">
-                        {log.user_id ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center">
-                              <User size={14} className="text-indigo-600" />
-                            </div>
-                            <span className="text-sm font-medium text-slate-700">
-                              {typeof log.user_id === 'object' ? log.user_id.username : log.user_id}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-slate-400 italic">Hệ thống</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {logs.length === 0 && (
+              <tbody className="divide-y divide-slate-50">
+                {logs.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
-                      Chưa có nhật ký nào
+                    <td colSpan="5" className="px-6 py-20 text-center">
+                      <div className="flex flex-col items-center gap-2 text-slate-400">
+                        <Info size={40} strokeWidth={1} />
+                        <p className="font-medium italic">Hiện tại chưa có sự kiện nào được ghi lại.</p>
+                      </div>
                     </td>
                   </tr>
+                ) : (
+                  logs.map((log) => (
+                    <tr key={log._id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
+                            <Clock size={14} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-600">
+                            {new Date(log.created_at).toLocaleString("vi-VN", {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-full">
+                          {log.device_id?.name || "Hệ thống"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border ${
+                          log.event_type === 'ALERT' 
+                            ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                            : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                        }`}>
+                          <AlertCircle size={12} />
+                          {log.event_type === 'ALERT' ? 'Cảnh báo' : 'Thông tin'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className={`text-sm leading-relaxed ${
+                          log.event_type === 'ALERT' ? 'text-rose-700 font-medium' : 'text-slate-600'
+                        }`}>
+                          {log.description}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <ChevronRight size={18} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
         )}
+      </div>
+      
+      {/* Footer Info */}
+      <div className="text-center text-xs text-slate-400 font-medium">
+        Tự động cập nhật mỗi khi có sự kiện mới được ghi nhận trong hệ thống.
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "../services/api";
 import {
   RefreshCw,
   LayoutGrid,
@@ -11,12 +11,11 @@ import { usePage } from "../contexts/PageContext";
 // Base URL từ env
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-
 export default function Devices() {
   const { setTitle } = usePage();
 
   useEffect(() => {
-    setTitle("Thiết bị");
+    setTitle("Quản lý thiết bị");
   }, [setTitle]);
 
   const [devices, setDevices] = useState([]);
@@ -27,8 +26,9 @@ export default function Devices() {
   const fetchDevices = async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
-      const response = await axios.get(`${API_URL}/api/v1/devices`);
-      setDevices(response.data.data || response.data);
+      const response = await apiClient.get('/devices');
+      const data = response.data;
+      setDevices(Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
       setError(null);
     } catch (err) {
       console.error("Lỗi khi tải thiết bị:", err);
@@ -51,24 +51,62 @@ export default function Devices() {
 
   const handleToggle = async (device) => {
     const newStatus = device.current_status === "ON" ? "OFF" : "ON";
-    setUpdatingId(device._id);
+    const deviceId = device._id || device.id;
+    setUpdatingId(deviceId);
 
     try {
-      await axios.post(`${API_URL}/api/v1/devices/control`, {
-        id: device._id,
+      await apiClient.post('/devices/control', {
+        id: deviceId,
         feedKey: device.feed_key,
         trangThai: newStatus
       });
 
       // Cập nhật state nội bộ ngay lập tức để UX mượt
       setDevices(prev => prev.map(d =>
-        d._id === device._id ? { ...d, current_status: newStatus } : d
+        (d._id || d.id) === deviceId ? { ...d, current_status: newStatus } : d
       ));
     } catch (err) {
       console.error("Lỗi điều khiển:", err);
       alert("Lỗi: Không thể thay đổi trạng thái thiết bị!");
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', room: '', type: '' });
+
+  const handleEdit = (device) => {
+    setEditingDevice(device);
+    setEditForm({
+      name: device.name,
+      room: device.room || '',
+      type: device.type
+    });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const id = editingDevice._id || editingDevice.id;
+    try {
+      const res = await apiClient.put(`/devices/${id}`, editForm);
+      setDevices(prev => prev.map(d => (d._id || d.id) === id ? res.data.data : d));
+      setEditingDevice(null);
+    } catch (err) {
+      console.error("Lỗi khi cập nhật thiết bị:", err);
+      alert("Không thể cập nhật thiết bị!");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa thiết bị này khỏi hệ thống?")) return;
+    
+    try {
+      await apiClient.delete(`/devices/${id}`);
+      setDevices(prev => prev.filter(d => (d._id || d.id) !== id));
+    } catch (err) {
+      console.error("Lỗi khi xóa thiết bị:", err);
+      alert("Không thể xóa thiết bị. Vui lòng thử lại!");
     }
   };
 
@@ -94,16 +132,67 @@ export default function Devices() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {devices.map((device) => (
-            <DeviceCard
-              key={device._id}
-              device={device}
-              onToggle={handleToggle}
-              isUpdating={updatingId === device._id}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {devices.map((device) => (
+              <DeviceCard
+                key={device._id || device.id}
+                device={device}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                isUpdating={updatingId === (device._id || device.id)}
+              />
+            ))}
+          </div>
+
+          {/* Edit Modal */}
+          {editingDevice && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">
+                <h3 className="text-2xl font-bold text-slate-800 mb-6">Chỉnh sửa thiết bị</h3>
+                <form onSubmit={handleUpdate} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Tên thiết bị</label>
+                    <input 
+                      type="text" 
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      placeholder="VD: Cảm biến phòng khách"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Phòng</label>
+                    <input 
+                      type="text" 
+                      value={editForm.room}
+                      onChange={(e) => setEditForm({...editForm, room: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      placeholder="VD: Phòng khách, Ban công..."
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button 
+                      type="button"
+                      onClick={() => setEditingDevice(null)}
+                      className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      Hủy
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-1 py-3 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
+                    >
+                      Lưu thay đổi
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

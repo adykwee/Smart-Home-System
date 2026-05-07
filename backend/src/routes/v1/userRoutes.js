@@ -12,8 +12,9 @@ router.post("/register", authLimiter, userController.register);
 // Protected routes (Only logged in users)
 router.use(protect);
 
+router.get("/", userController.getAll); // Tất cả user có thể xem danh sách thành viên
+
 // Admin only routes
-router.get("/", adminOnly, userController.getAll);
 router.get("/:id", adminOnly, userController.getById);
 router.post("/", adminOnly, userController.create);
 router.put("/:id", adminOnly, userController.update);

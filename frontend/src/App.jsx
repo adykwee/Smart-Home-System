@@ -1,32 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import DeviceStatus from "./pages/DeviceStatus";
 import Devices from "./pages/Devices";
 import Logs from "./pages/Logs";
-import Thresholds from "./pages/Thresholds";
+import Schedules from "./pages/Schedules";
+import Alerts from "./pages/Alerts";
 import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import { PageProvider } from "./contexts/PageContext";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
-
-// Component bảo vệ Route
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">Đang tải...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-  return children;
-};
-
-// Component bảo vệ Route dành riêng cho Admin
-const AdminRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">Đang tải...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== "admin") return <Navigate to="/" replace />;
-  return children;
-};
+import { AuthProvider } from "./contexts/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
@@ -35,15 +20,18 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
             
-            <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-              <Route index element={<Dashboard />} />
-              <Route path="device-status" element={<DeviceStatus />} />
-              <Route path="devices" element={<Devices />} />
-              <Route path="logs" element={<Logs />} />
-              <Route path="thresholds" element={<Thresholds />} />
-              <Route path="users" element={<AdminRoute><Users /></AdminRoute>} />
+            <Route path="/" element={<PrivateRoute />}>
+              <Route element={<MainLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="device-status" element={<DeviceStatus />} />
+                <Route path="devices" element={<Devices />} />
+                <Route path="logs" element={<Logs />} />
+                <Route path="schedules" element={<Schedules />} />
+                <Route path="alerts" element={<Alerts />} />
+                <Route path="users" element={<Users />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

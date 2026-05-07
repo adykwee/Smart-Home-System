@@ -43,19 +43,22 @@ class AlertContext {
   async checkThresholds(deviceId, feedKey, value, io) {
     try {
       // 1. Lấy cấu hình ngưỡng của thiết bị từ DB
-      // Note: Ở đây chúng ta tạm quy ước thiết bị sensor có chung 1 metric_type là tên feedKey
-      const thresholds = await Threshold.find({ device_id: deviceId });
+      // Đảm bảo deviceId là string để query chính xác
+      const deviceIdStr = deviceId.toString();
+      const thresholds = await Threshold.find({ device_id: deviceIdStr });
+      
+      console.log(`[AlertEngine] Đang kiểm tra ${thresholds.length} ngưỡng cho thiết bị ${deviceIdStr} (Giá trị: ${value})`);
 
       for (let threshold of thresholds) {
         for (let strategy of this.strategies) {
           const alertMessage = strategy.check(value, threshold);
 
           if (alertMessage) {
-            console.log(`[ALERT] Thiết bị ${deviceId}: ${alertMessage}`);
+            console.log(`[ALERT] Thiết bị ${deviceIdStr}: ${alertMessage}`);
 
-            // 2. Ghi Log Cảnh Báo (Sử dụng Repository)
+            // 2. Ghi Log Cảnh Báo (Sử dụng Repository) - Dùng 'ALERT' để đồng bộ với Frontend
             await systemLogRepo.createLog({
-              event_type: 'CẢNH BÁO NGƯỠNG',
+              event_type: 'ALERT',
               description: `[${feedKey}] ${alertMessage}`,
               device_id: deviceId
             });

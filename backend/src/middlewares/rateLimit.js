@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // Giới hạn chung cho toàn bộ API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút
-  max: 100, // Mỗi IP tối đa 100 request trong 15 phút
+  max: 5000, //
   message: { status: 'error', message: 'Quá nhiều yêu cầu từ IP này, vui lòng thử lại sau 15 phút.' },
   standardHeaders: true,
   legacyHeaders: false,

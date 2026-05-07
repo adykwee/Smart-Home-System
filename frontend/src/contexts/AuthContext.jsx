@@ -1,58 +1,80 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { createContext, useState, useEffect, useContext } from 'react';
+import apiClient from '../services/api';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
-  const logout = () => {
-    setToken(null);
-  };
-
-  // Cấu hình axios header mặc định nếu có token
+  // Khôi phục user từ token (nếu có API /me, nếu không thì lấy từ localStorage tạm)
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      localStorage.setItem("token", token);
-      
-      // Parse token để lấy info user (đây là cách decode đơn giản phần payload)
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUser({ id: payload.id, username: payload.username, role: payload.role });
-      } catch {
-        console.error("Invalid token format");
-        logout();
-      }
-    } else {
-      delete axios.defaults.headers.common["Authorization"];
-      localStorage.removeItem("token");
-      setUser(null);
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, [token]);
 
   const login = async (username, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/users/login", { username, password });
-      if (res.data.status === "success") {
-        setToken(res.data.data.token);
-        // User sẽ được set trong useEffect khi token thay đổi
-        return { success: true };
-      }
+      const response = await apiClient.post('/users/login', { username, password });
+      const { data } = response.data;
+      
+      const userData = { _id: data._id, username: data.username, role: data.role };
+      const userToken = data.token;
+      
+      setUser(userData);
+      setToken(userToken);
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', userToken);
+      
+      return { success: true };
     } catch (error) {
-      return { success: false, message: error.response?.data?.message || "Lỗi đăng nhập" };
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.' 
+      };
     }
   };
 
+  const register = async (username, password) => {
+    try {
+      const response = await apiClient.post('/users/register', { username, password });
+      const { data } = response.data;
+      
+      const userData = { _id: data._id, username: data.username, role: data.role };
+      const userToken = data.token;
+      
+      setUser(userData);
+      setToken(userToken);
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', userToken);
+      
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.' 
+      };
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+      {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => useContext(AuthContext);

@@ -71,19 +71,24 @@ const userController = {
       const { username, password } = req.body;
       const user = await User.findOne({ username });
       
-      if (user && (await user.comparePassword(password))) {
-        res.status(200).json({
-          status: "success",
-          data: {
-            _id: user._id,
-            username: user.username,
-            role: user.role,
-            token: generateToken(user._id, user.username, user.role),
-          }
-        });
-      } else {
-        res.status(401).json({ status: "error", message: "Sai tên đăng nhập hoặc mật khẩu" });
+      if (!user) {
+        return res.status(401).json({ status: "error", message: "Tài khoản không tồn tại" });
       }
+
+      const isPasswordCorrect = await user.comparePassword(password);
+      if (!isPasswordCorrect) {
+        return res.status(401).json({ status: "error", message: "Mật khẩu không chính xác" });
+      }
+
+      res.status(200).json({
+        status: "success",
+        data: {
+          _id: user._id,
+          username: user.username,
+          role: user.role,
+          token: generateToken(user._id, user.username, user.role),
+        }
+      });
     } catch (error) { next(error); }
   },
 
