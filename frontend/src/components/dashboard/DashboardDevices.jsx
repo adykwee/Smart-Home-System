@@ -38,13 +38,14 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
     return { icon: Zap, bg: 'bg-slate-500', label: 'Thiết bị' };
   };
 
-  // Sắp xếp: Ưu tiên Sensor lên đầu, sau đó giới hạn 4 thiết bị
+  // Sắp xếp: Ưu tiên Thiết bị điều khiển (Actuator) lên đầu, Sensor xuống sau
   const displayDevices = (Array.isArray(dbDevices) ? [...dbDevices] : [])
     .sort((a, b) => {
       const aIsSensor = a.type === 'Sensor' || a.feed_key?.includes('sensor');
       const bIsSensor = b.type === 'Sensor' || b.feed_key?.includes('sensor');
-      if (aIsSensor && !bIsSensor) return -1;
-      if (!aIsSensor && bIsSensor) return 1;
+      // Nếu a là Sensor và b là Actuator, cho a xuống sau (return 1)
+      if (aIsSensor && !bIsSensor) return 1;
+      if (!aIsSensor && bIsSensor) return -1;
       return 0;
     })
     .slice(0, 4);

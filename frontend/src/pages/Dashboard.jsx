@@ -3,25 +3,13 @@ import { usePage } from "../contexts/PageContext";
 import WelcomeBanner from "../components/dashboard/WelcomeBanner";
 import RoomHeader from "../components/dashboard/RoomHeader";
 import QuickControls from "../components/dashboard/QuickControls";
-import DialControl from "../components/dashboard/DialControl";
+import FanSpeedDial from "../components/dashboard/FanSpeedDial";
 import DashboardDevices from "../components/dashboard/DashboardDevices";
 import Members from "../components/dashboard/Members";
 import DashboardLogs from "../components/dashboard/DashboardLogs";
+import SensorChart from "../components/dashboard/SensorChart";
 import apiClient from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
-
-// Mock Data for the chart
-const chartData = [
-  { name: 'Jan', value: 20 },
-  { name: 'Feb', value: 30 },
-  { name: 'Mar', value: 20 },
-  { name: 'Apr', value: 45 },
-  { name: 'May', value: 30 },
-  { name: 'June', value: 75 }, // Peak
-  { name: 'July', value: 40 },
-  { name: 'Aug', value: 25 },
-];
-
 import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:5000";
@@ -47,7 +35,6 @@ export default function Dashboard() {
             role: u.role,
             seed: u.username
           }));
-          // Đưa user hiện tại lên đầu
           const currentUserIndex = formattedMembers.findIndex(u => u.name === userName);
           if (currentUserIndex > 0) {
             const currentUser = formattedMembers.splice(currentUserIndex, 1)[0];
@@ -62,35 +49,33 @@ export default function Dashboard() {
     fetchUsers();
   }, [userName]);
 
-  const [targetTemp, setTargetTemp] = useState(25);
-  const [activeDevice, setActiveDevice] = useState('Temperature');
+  const [fanSpeed, setFanSpeed] = useState(0);
   const [sensorValues, setSensorValues] = useState({});
   const [devicesState, setDevicesState] = useState({});
   const [dbDevices, setDbDevices] = useState([]);
 
   useEffect(() => {
-    setTitle(""); 
-    
-    // Fetch initial data from DB
+    setTitle("");
+
     const fetchInitialData = async () => {
       try {
         const res = await apiClient.get('/devices');
         const json = res.data;
         const devices = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-        
+
         setDbDevices(devices);
-        
+
         const initialSensors = {};
         const initialActuators = {};
-        
+
         devices.forEach(d => {
           if (d.type === 'Sensor' || d.feed_key?.includes('sensor')) {
             initialSensors[d.feed_key] = d.current_status;
           } else {
-            initialActuators[d.id || d._id] = d.current_status === 'ON';
+            initialActuators[d._id || d.id] = d.current_status === 'ON';
           }
         });
-        
+
         setSensorValues(initialSensors);
         setDevicesState(initialActuators);
       } catch (err) {
@@ -99,14 +84,28 @@ export default function Dashboard() {
     };
     fetchInitialData();
 
-    // Connect to Socket.io for real-time data
     const socket = io(SOCKET_URL);
-    
+
     socket.on("realtime_data", (data) => {
+      // 1. Cập nhật giá trị cảm biến
       setSensorValues(prev => ({
         ...prev,
         [data.feed]: data.value
       }));
+
+      // 2. Cập nhật trạng thái thiết bị (ON/OFF)
+      // Tìm thiết bị có feed_key tương ứng trong dbDevices để lấy ID
+      setDbDevices(currentDevices => {
+        const device = currentDevices.find(d => d.feed_key === data.feed);
+        if (device && device.type !== 'Sensor') {
+          const isON = data.value === '1' || data.value.toUpperCase() === 'ON';
+          setDevicesState(prev => ({
+            ...prev,
+            [device._id || device.id]: isON
+          }));
+        }
+        return currentDevices;
+      });
     });
 
     socket.on("alert", (data) => {
@@ -122,42 +121,41 @@ export default function Dashboard() {
     if (!device) return;
 
     const newStatus = !devicesState[deviceId];
-    
+
     try {
-      // Gọi API điều khiển thật
       await apiClient.post('/devices/control', {
         id: deviceId,
         feedKey: device.feed_key,
         trangThai: newStatus ? 'ON' : 'OFF'
       });
-
       setDevicesState(prev => ({ ...prev, [deviceId]: newStatus }));
     } catch (err) {
       console.error("Lỗi điều khiển thiết bị:", err);
     }
   };
 
-  // Tìm giá trị nhiệt độ và độ ẩm để hiện lên Header
   const currentTemp = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('temp') || k.toLowerCase().includes('nhiet'))?.[1];
   const currentHumid = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('humid') || k.toLowerCase().includes('doam'))?.[1];
+  const currentLight = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('light') || k.toLowerCase().includes('lux') || k.toLowerCase().includes('anhsang'))?.[1];
 
   return (
     <div className="w-full flex flex-col xl:flex-row gap-8">
-      
+
       {/* CỘT TRÁI (70%) */}
       <div className="flex-1 flex flex-col gap-8">
         <WelcomeBanner username={userName} />
-        <RoomHeader temp={currentTemp} humidity={currentHumid} username={userName} />
-        <QuickControls activeDevice={activeDevice} setActiveDevice={setActiveDevice} />
-        <DialControl targetTemp={targetTemp} setTargetTemp={setTargetTemp} />
+        <RoomHeader temp={currentTemp} humidity={currentHumid} light={currentLight} username={userName} />
+        <QuickControls dbDevices={dbDevices} />
+        <FanSpeedDial fanSpeed={fanSpeed} setFanSpeed={setFanSpeed} />
+        <SensorChart />
       </div>
 
       {/* CỘT PHẢI (30%) */}
       <div className="w-full xl:w-[380px] flex flex-col gap-6">
-        <DashboardDevices 
-          devicesState={devicesState} 
-          toggleDevice={toggleDevice} 
-          sensorValues={sensorValues} 
+        <DashboardDevices
+          devicesState={devicesState}
+          toggleDevice={toggleDevice}
+          sensorValues={sensorValues}
           dbDevices={dbDevices}
         />
         <Members members={members} />

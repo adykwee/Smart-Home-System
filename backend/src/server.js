@@ -31,6 +31,7 @@ const server = http.createServer(app);
 
 // Khởi tạo Socket.IO
 const io = new Server(server, { cors: { origin: "*" } });
+app.set("io", io); // Cho phép các controller truy cập io
 
 const alertEngine = require("./services/alertEngine");
 const deviceRepo = require("./repositories/DeviceRepository");

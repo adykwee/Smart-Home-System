@@ -15,7 +15,7 @@ export default function DashboardLogs() {
     try {
       const res = await apiClient.get('/system-logs');
       const data = res.data?.data || res.data || [];
-      setLogs(Array.isArray(data) ? data.slice(0, 5) : []);
+      setLogs(Array.isArray(data) ? data.slice(0, 8) : []);
     } catch (error) {
       console.error("Lỗi lấy logs:", error);
     } finally {
@@ -37,7 +37,7 @@ export default function DashboardLogs() {
   }, []);
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col flex-1 border border-slate-100">
+    <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col flex-1 border border-slate-100 min-h-[400px]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-slate-800">Activity logs</h3>
         <button onClick={() => navigate('/logs')} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">

@@ -9,7 +9,7 @@ const sensorDataController = {
   },
   getAll: async (req, res, next) => {
     try {
-      const data = await SensorData.find().populate('device_id').sort({ recorded_at: -1 }).limit(20);
+      const data = await SensorData.find().populate('device_id').sort({ createdAt: -1 }).limit(20);
       res.status(200).json({ status: "success", data: data });
     } catch (error) { next(error); }
   },
@@ -21,8 +21,29 @@ const sensorDataController = {
   },
   create: async (req, res, next) => {
     try {
-      await SensorData.create(req.body);
-      res.status(201).json({ status: "success", data: {} });
+      const newData = await SensorData.create(req.body);
+      
+      // Tìm thiết bị để lấy feed_key thật
+      const Device = require("../models/deviceModel");
+      const device = await Device.findById(req.body.device_id);
+      
+      if (device) {
+        const io = req.app.get("io");
+        if (io) {
+          // Gửi dữ liệu real-time với feed_key chuẩn
+          if (req.body.temperature !== undefined) {
+            io.emit("realtime_data", { feed: device.feed_key, value: req.body.temperature });
+          }
+          if (req.body.humidity !== undefined) {
+            io.emit("realtime_data", { feed: device.feed_key, value: req.body.humidity });
+          }
+          if (req.body.light !== undefined) {
+            io.emit("realtime_data", { feed: device.feed_key, value: req.body.light });
+          }
+        }
+      }
+      
+      res.status(201).json({ status: "success", data: newData });
     } catch (error) { next(error); }
   },
   update: async (req, res, next) => {
