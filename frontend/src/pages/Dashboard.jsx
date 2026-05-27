@@ -93,12 +93,20 @@ export default function Dashboard() {
         [data.feed]: data.value
       }));
 
-      // 2. Cập nhật trạng thái thiết bị (ON/OFF)
+      // 2. Cập nhật trạng thái thiết bị (ON/OFF) và Tốc độ quạt (nếu là số)
       // Tìm thiết bị có feed_key tương ứng trong dbDevices để lấy ID
       setDbDevices(currentDevices => {
         const device = currentDevices.find(d => d.feed_key === data.feed);
         if (device && device.type !== 'Sensor') {
-          const isON = data.value === '1' || data.value.toUpperCase() === 'ON';
+          // Xử lý nếu data là số (tốc độ quạt)
+          const numValue = Number(data.value);
+          if (!isNaN(numValue) && numValue >= 0 && numValue <= 10) {
+            if (device.name.toLowerCase().includes('fan') || device.name.toLowerCase().includes('quạt') || device.name.toLowerCase().includes('quat') || device.feed_key?.toLowerCase().includes('fan')) {
+              setFanSpeed(numValue);
+            }
+          }
+
+          const isON = data.value === '1' || data.value.toUpperCase() === 'ON' || (!isNaN(numValue) && numValue > 0);
           setDevicesState(prev => ({
             ...prev,
             [device._id || device.id]: isON
@@ -134,6 +142,35 @@ export default function Dashboard() {
     }
   };
 
+  const changeFanSpeed = async (speed) => {
+    setFanSpeed(speed); // Cập nhật UI ngay lập tức
+    
+    // Tìm thiết bị quạt (tên chứa 'fan' hoặc 'quạt' hoặc 'quat', hoặc feed_key chứa 'fan')
+    const fanDevice = dbDevices.find(d => 
+      d.name.toLowerCase().includes('fan') || 
+      d.name.toLowerCase().includes('quạt') || 
+      d.name.toLowerCase().includes('quat') || 
+      d.feed_key?.toLowerCase().includes('fan')
+    );
+
+    if (fanDevice) {
+      try {
+        await apiClient.post('/devices/control', {
+          id: fanDevice._id || fanDevice.id,
+          feedKey: fanDevice.feed_key,
+          trangThai: speed.toString()
+        });
+        
+        // Nếu tốc độ > 0, coi như ON, ngược lại coi như OFF
+        setDevicesState(prev => ({ ...prev, [fanDevice._id || fanDevice.id]: speed > 0 }));
+      } catch (err) {
+        console.error("Lỗi điều khiển tốc độ quạt:", err);
+      }
+    } else {
+      console.warn("Không tìm thấy thiết bị quạt trong CSDL để điều khiển");
+    }
+  };
+
   const currentTemp = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('temp') || k.toLowerCase().includes('nhiet'))?.[1];
   const currentHumid = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('humid') || k.toLowerCase().includes('doam'))?.[1];
   const currentLight = Object.entries(sensorValues).find(([k]) => k.toLowerCase().includes('light') || k.toLowerCase().includes('lux') || k.toLowerCase().includes('anhsang'))?.[1];
@@ -146,7 +183,7 @@ export default function Dashboard() {
         <WelcomeBanner username={userName} />
         <RoomHeader temp={currentTemp} humidity={currentHumid} light={currentLight} username={userName} />
         <QuickControls dbDevices={dbDevices} />
-        <FanSpeedDial fanSpeed={fanSpeed} setFanSpeed={setFanSpeed} />
+        <FanSpeedDial fanSpeed={fanSpeed} setFanSpeed={changeFanSpeed} />
         <SensorChart />
       </div>
 

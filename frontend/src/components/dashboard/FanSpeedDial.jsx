@@ -71,7 +71,7 @@ export default function FanSpeedDial({ fanSpeed, setFanSpeed }) {
       <div className="flex-1 flex items-center justify-center relative min-h-[260px]">
         {/* Decrease button */}
         <button
-          onClick={() => setFanSpeed(p => Math.max(0, p - 1))}
+          onClick={() => setFanSpeed(Math.max(0, fanSpeed - 1))}
           className="absolute left-8 lg:left-16 w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition active:scale-95"
         >
           <Minus size={20} strokeWidth={3} />
@@ -142,9 +142,8 @@ export default function FanSpeedDial({ fanSpeed, setFanSpeed }) {
         <span className="absolute right-24 lg:right-32 font-semibold text-sm" style={{ color: level.color }}>
           {MAX_SPEED}
         </span>
-        {/* Increase button */}
         <button
-          onClick={() => setFanSpeed(p => Math.min(MAX_SPEED, p + 1))}
+          onClick={() => setFanSpeed(Math.min(MAX_SPEED, fanSpeed + 1))}
           className="absolute right-8 lg:right-16 w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition active:scale-95"
           style={{ backgroundColor: level.color, boxShadow: `0 8px 20px ${level.color}40` }}
         >

@@ -14,7 +14,11 @@ const deviceController = {
       const { id, feedKey, trangThai } = req.body;
       const ADAFRUIT_USERNAME = process.env.AIO_USERNAME;
       const feedUrl = `${ADAFRUIT_USERNAME}/feeds/${feedKey}`;
-      const giaTriGuiLen = trangThai === 'ON' ? '1' : '0';
+      
+      let giaTriGuiLen;
+      if (trangThai === 'ON') giaTriGuiLen = '1';
+      else if (trangThai === 'OFF') giaTriGuiLen = '0';
+      else giaTriGuiLen = String(trangThai);
 
       // 1. Gửi lệnh lên Adafruit
       mqttClient.publish(feedUrl, giaTriGuiLen, async (err) => {

@@ -34,6 +34,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.set("io", io); // Cho phép các controller truy cập io
 
 const alertEngine = require("./services/alertEngine");
+const startScheduleEngine = require("./services/scheduleEngine");
 const deviceRepo = require("./repositories/DeviceRepository");
 const DeviceFactory = require("./factories/DeviceFactory");
 
@@ -91,6 +92,9 @@ io.on("connection", (socket) => {
   console.log("Một user vừa kết nối Dashboard (Socket ID:", socket.id, ")");
   socket.on("disconnect", () => console.log("User đã ngắt kết nối"));
 });
+
+// Khởi động Schedule Engine
+startScheduleEngine(io);
 
 // Chạy Server
 server.listen(PORT, () => {
