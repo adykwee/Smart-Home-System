@@ -76,8 +76,28 @@ mqttClient.on("message", async (topic, message) => {
       await alertEngine.checkThresholds(device._id, feed, numericValue, io);
 
     } else {
-      // Actuator (quạt, đèn): chuyển sang ON/OFF
-      const status = (data === '1' || data.toUpperCase() === 'ON') ? 'ON' : 'OFF';
+      const isFan = device.name?.toLowerCase().includes('fan') || 
+                    device.name?.toLowerCase().includes('quạt') || 
+                    device.name?.toLowerCase().includes('quat') || 
+                    device.feed_key?.toLowerCase().includes('fan');
+      let status;
+      if (isFan) {
+        if (data.toUpperCase() === 'ON') {
+          status = '50';
+        } else if (data.toUpperCase() === 'OFF') {
+          status = '0';
+        } else {
+          const speedNum = Number(data);
+          if (!isNaN(speedNum) && speedNum >= 0 && speedNum <= 100) {
+            status = data;
+          } else {
+            status = '0';
+          }
+        }
+      } else {
+        // Actuator (đèn, thiết bị khác): chuyển sang ON/OFF
+        status = (data === '1' || data.toUpperCase() === 'ON') ? 'ON' : 'OFF';
+      }
       await deviceRepo.updateStatus(device._id, status);
     }
 

@@ -1,20 +1,29 @@
 import { Fan, Lightbulb, Thermometer, Droplets, HelpCircle, Trash2, Settings, Sun } from "lucide-react";
 
 const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
+  const isFan = device.name?.toLowerCase().includes("quạt") || 
+                device.name?.toLowerCase().includes("fan") || 
+                device.feed_key?.toLowerCase().includes("fan");
+
+  const currentSpeed = Number(device.current_status);
+  const isOn = isFan 
+    ? (device.current_status === "ON" || (!isNaN(currentSpeed) && currentSpeed >= 10))
+    : device.current_status === "ON";
+
   const getIcon = (name) => {
     const lowerName = name?.toLowerCase();
 
     // Check for keywords (substring matching)
-    if (lowerName?.includes("quạt")) return <Fan className={device.current_status === "ON" ? "animate-spin-slow" : ""} />;
-    if (lowerName?.includes("đèn")) return <Lightbulb />;
-    if (lowerName?.includes("nhiệt")) return <Thermometer />;
-    if (lowerName?.includes("ẩm")) return <Droplets />;
-    if (lowerName?.includes("ánh sáng")) return <Sun />;
+    if (lowerName?.includes("quạt") || lowerName?.includes("fan")) {
+      return <Fan className={isOn ? "animate-spin-slow" : ""} />;
+    }
+    if (lowerName?.includes("đèn") || lowerName?.includes("light") || lowerName?.includes("led")) return <Lightbulb />;
+    if (lowerName?.includes("nhiệt") || lowerName?.includes("temp")) return <Thermometer />;
+    if (lowerName?.includes("ẩm") || lowerName?.includes("humid")) return <Droplets />;
+    if (lowerName?.includes("ánh sáng") || lowerName?.includes("light") || lowerName?.includes("lux")) return <Sun />;
 
     return <HelpCircle />;
   };
-
-  const isOn = device.current_status === "ON";
 
   return (
     <div className={`relative group overflow-hidden rounded-3xl transition-all duration-500 ${

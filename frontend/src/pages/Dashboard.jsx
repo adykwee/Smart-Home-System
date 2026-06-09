@@ -72,7 +72,26 @@ export default function Dashboard() {
           if (d.type === 'Sensor' || d.feed_key?.includes('sensor')) {
             initialSensors[d.feed_key] = d.current_status;
           } else {
-            initialActuators[d._id || d.id] = d.current_status === 'ON';
+            const isFan = d.name?.toLowerCase().includes('fan') || 
+                          d.name?.toLowerCase().includes('quạt') || 
+                          d.name?.toLowerCase().includes('quat') || 
+                          d.feed_key?.toLowerCase().includes('fan');
+            if (isFan) {
+              const speedData = Number(d.current_status);
+              if (!isNaN(speedData) && speedData >= 10 && speedData <= 100) {
+                const uiSpeed = Math.round(speedData / 10);
+                setFanSpeed(uiSpeed);
+                initialActuators[d._id || d.id] = true;
+              } else if (d.current_status === 'ON') {
+                setFanSpeed(5);
+                initialActuators[d._id || d.id] = true;
+              } else {
+                setFanSpeed(0);
+                initialActuators[d._id || d.id] = false;
+              }
+            } else {
+              initialActuators[d._id || d.id] = d.current_status === 'ON';
+            }
           }
         });
 
@@ -98,19 +117,31 @@ export default function Dashboard() {
       setDbDevices(currentDevices => {
         const device = currentDevices.find(d => d.feed_key === data.feed);
         if (device && device.type !== 'Sensor') {
-          // Xử lý nếu data là số (tốc độ quạt)
-          const numValue = Number(data.value);
-          if (!isNaN(numValue) && numValue >= 0 && numValue <= 10) {
-            if (device.name.toLowerCase().includes('fan') || device.name.toLowerCase().includes('quạt') || device.name.toLowerCase().includes('quat') || device.feed_key?.toLowerCase().includes('fan')) {
-              setFanSpeed(numValue);
+          const isFan = device.name?.toLowerCase().includes('fan') || 
+                        device.name?.toLowerCase().includes('quạt') || 
+                        device.name?.toLowerCase().includes('quat') || 
+                        device.feed_key?.toLowerCase().includes('fan');
+          
+          if (isFan) {
+            const speedData = Number(data.value);
+            if (!isNaN(speedData) && speedData >= 10 && speedData <= 100) {
+              const uiSpeed = Math.round(speedData / 10);
+              setFanSpeed(uiSpeed);
+              setDevicesState(prev => ({ ...prev, [device._id || device.id]: true }));
+            } else if (data.value === '0' || data.value.toUpperCase() === 'OFF') {
+              setFanSpeed(0);
+              setDevicesState(prev => ({ ...prev, [device._id || device.id]: false }));
+            } else if (data.value.toUpperCase() === 'ON') {
+              setFanSpeed(5);
+              setDevicesState(prev => ({ ...prev, [device._id || device.id]: true }));
             }
+          } else {
+            const isON = data.value === '1' || data.value.toUpperCase() === 'ON';
+            setDevicesState(prev => ({
+              ...prev,
+              [device._id || device.id]: isON
+            }));
           }
-
-          const isON = data.value === '1' || data.value.toUpperCase() === 'ON' || (!isNaN(numValue) && numValue > 0);
-          setDevicesState(prev => ({
-            ...prev,
-            [device._id || device.id]: isON
-          }));
         }
         return currentDevices;
       });
@@ -155,10 +186,11 @@ export default function Dashboard() {
 
     if (fanDevice) {
       try {
+        const scaledSpeed = speed * 10;
         await apiClient.post('/devices/control', {
           id: fanDevice._id || fanDevice.id,
           feedKey: fanDevice.feed_key,
-          trangThai: speed.toString()
+          trangThai: scaledSpeed.toString()
         });
         
         // Nếu tốc độ > 0, coi như ON, ngược lại coi như OFF

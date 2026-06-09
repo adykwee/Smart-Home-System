@@ -50,7 +50,20 @@ export default function Devices() {
   }, []);
 
   const handleToggle = async (device) => {
-    const newStatus = device.current_status === "ON" ? "OFF" : "ON";
+    const isFan = device.name?.toLowerCase().includes('fan') || 
+                  device.name?.toLowerCase().includes('quạt') || 
+                  device.name?.toLowerCase().includes('quat') || 
+                  device.feed_key?.toLowerCase().includes('fan');
+    
+    let newStatus;
+    if (isFan) {
+      const currentSpeed = Number(device.current_status);
+      const isOn = (!isNaN(currentSpeed) && currentSpeed >= 10) || device.current_status === "ON";
+      newStatus = isOn ? "0" : "50";
+    } else {
+      newStatus = device.current_status === "ON" ? "OFF" : "ON";
+    }
+
     const deviceId = device._id || device.id;
     setUpdatingId(deviceId);
 
