@@ -1,15 +1,17 @@
-import { Fan, Lightbulb, Thermometer, Droplets, HelpCircle, Trash2, Settings } from "lucide-react";
+import { Fan, Lightbulb, Thermometer, Droplets, HelpCircle, Trash2, Settings, Sun } from "lucide-react";
 
 const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
-  const getIcon = (type) => {
-    switch (type?.toLowerCase()) {
-      case "fan": return <Fan className={device.current_status === "ON" ? "animate-spin-slow" : ""} />;
-      case "light": return <Lightbulb />;
-      case "sensor":
-      case "temperature": return <Thermometer />;
-      case "humidity": return <Droplets />;
-      default: return <HelpCircle />;
-    }
+  const getIcon = (name) => {
+    const lowerName = name?.toLowerCase();
+
+    // Check for keywords (substring matching)
+    if (lowerName?.includes("quạt")) return <Fan className={device.current_status === "ON" ? "animate-spin-slow" : ""} />;
+    if (lowerName?.includes("đèn")) return <Lightbulb />;
+    if (lowerName?.includes("nhiệt")) return <Thermometer />;
+    if (lowerName?.includes("ẩm")) return <Droplets />;
+    if (lowerName?.includes("ánh sáng")) return <Sun />;
+
+    return <HelpCircle />;
   };
 
   const isOn = device.current_status === "ON";
@@ -48,7 +50,7 @@ const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
           <div className={`p-3 rounded-2xl transition-colors duration-300 ${
             isOn ? "bg-white/20 text-white" : "bg-indigo-50 text-indigo-600"
           }`}>
-            {getIcon(device.type)}
+            {getIcon(device.name)}
           </div>
           
           {device.type === "Sensor" ? (

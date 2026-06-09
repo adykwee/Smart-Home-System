@@ -133,17 +133,58 @@ export default function Devices() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {devices.map((device) => (
-              <DeviceCard
-                key={device._id || device.id}
-                device={device}
-                onToggle={handleToggle}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-                isUpdating={updatingId === (device._id || device.id)}
-              />
-            ))}
+          <div className="space-y-10">
+            {devices.filter(d => d.type === "Sensor").length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-xl">
+                    <LayoutGrid className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  Cảm biến
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {devices.filter(d => d.type === "Sensor").map((device) => (
+                    <DeviceCard
+                      key={device._id || device.id}
+                      device={device}
+                      onToggle={handleToggle}
+                      onDelete={handleDelete}
+                      onEdit={handleEdit}
+                      isUpdating={updatingId === (device._id || device.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {devices.filter(d => d.type !== "Sensor").length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 rounded-xl">
+                    <Zap className="w-5 h-5 text-amber-600" />
+                  </div>
+                  Quạt & Đèn
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {devices.filter(d => d.type !== "Sensor").map((device) => (
+                    <DeviceCard
+                      key={device._id || device.id}
+                      device={device}
+                      onToggle={handleToggle}
+                      onDelete={handleDelete}
+                      onEdit={handleEdit}
+                      isUpdating={updatingId === (device._id || device.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {devices.length === 0 && (
+              <div className="flex flex-col items-center justify-center min-h-[200px] text-slate-400 gap-4">
+                <p className="font-medium">Chưa có thiết bị nào trong hệ thống.</p>
+              </div>
+            )}
           </div>
 
           {/* Edit Modal */}
