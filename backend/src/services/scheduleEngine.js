@@ -46,7 +46,15 @@ const startScheduleEngine = (io) => {
             // Trigger qua MQTT
             const feedKey = device.feed_key;
             const topic = `${process.env.AIO_USERNAME}/feeds/${feedKey}`;
-            const payload = (actionToTrigger === 'ON') ? '1' : '0';
+            
+            const isFan = device.name?.toLowerCase().includes('fan') || 
+                          device.name?.toLowerCase().includes('quạt') || 
+                          device.name?.toLowerCase().includes('quat') || 
+                          device.feed_key?.toLowerCase().includes('fan');
+            
+            const payload = isFan 
+              ? (actionToTrigger === 'ON' ? '50' : '0')
+              : (actionToTrigger === 'ON' ? '1' : '0');
             
             mqttClient.publish(topic, payload, async (err) => {
               if (!err) {
