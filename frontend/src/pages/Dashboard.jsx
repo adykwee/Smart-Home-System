@@ -53,6 +53,17 @@ export default function Dashboard() {
   const [sensorValues, setSensorValues] = useState({});
   const [devicesState, setDevicesState] = useState({});
   const [dbDevices, setDbDevices] = useState([]);
+  const [selectedFanId, setSelectedFanId] = useState(null);
+
+  // Lọc ra tất cả các thiết bị quạt
+  const fanDevices = dbDevices.filter(d => 
+    d.name?.toLowerCase().includes('fan') || 
+    d.name?.toLowerCase().includes('quạt') || 
+    d.name?.toLowerCase().includes('quat') || 
+    d.feed_key?.toLowerCase().includes('fan')
+  );
+
+  const activeFanDevice = fanDevices.find(d => (d._id || d.id) === selectedFanId) || fanDevices[0];
 
   useEffect(() => {
     setTitle("");
@@ -65,38 +76,14 @@ export default function Dashboard() {
 
         setDbDevices(devices);
 
+        // Thiết lập cảm biến ban đầu
         const initialSensors = {};
-        const initialActuators = {};
-
         devices.forEach(d => {
           if (d.type === 'Sensor' || d.feed_key?.includes('sensor')) {
             initialSensors[d.feed_key] = d.current_status;
-          } else {
-            const isFan = d.name?.toLowerCase().includes('fan') || 
-                          d.name?.toLowerCase().includes('quạt') || 
-                          d.name?.toLowerCase().includes('quat') || 
-                          d.feed_key?.toLowerCase().includes('fan');
-            if (isFan) {
-              const speedData = Number(d.current_status);
-              if (!isNaN(speedData) && speedData >= 10 && speedData <= 100) {
-                const uiSpeed = Math.round(speedData / 10);
-                setFanSpeed(uiSpeed);
-                initialActuators[d._id || d.id] = true;
-              } else if (d.current_status === 'ON') {
-                setFanSpeed(5);
-                initialActuators[d._id || d.id] = true;
-              } else {
-                setFanSpeed(0);
-                initialActuators[d._id || d.id] = false;
-              }
-            } else {
-              initialActuators[d._id || d.id] = d.current_status === 'ON';
-            }
           }
         });
-
         setSensorValues(initialSensors);
-        setDevicesState(initialActuators);
       } catch (err) {
         console.error("Error fetching initial devices:", err);
       }
@@ -112,39 +99,15 @@ export default function Dashboard() {
         [data.feed]: data.value
       }));
 
-      // 2. Cập nhật trạng thái thiết bị (ON/OFF) và Tốc độ quạt (nếu là số)
-      // Tìm thiết bị có feed_key tương ứng trong dbDevices để lấy ID
-      setDbDevices(currentDevices => {
-        const device = currentDevices.find(d => d.feed_key === data.feed);
-        if (device && device.type !== 'Sensor') {
-          const isFan = device.name?.toLowerCase().includes('fan') || 
-                        device.name?.toLowerCase().includes('quạt') || 
-                        device.name?.toLowerCase().includes('quat') || 
-                        device.feed_key?.toLowerCase().includes('fan');
-          
-          if (isFan) {
-            const speedData = Number(data.value);
-            if (!isNaN(speedData) && speedData >= 10 && speedData <= 100) {
-              const uiSpeed = Math.round(speedData / 10);
-              setFanSpeed(uiSpeed);
-              setDevicesState(prev => ({ ...prev, [device._id || device.id]: true }));
-            } else if (data.value === '0' || data.value.toUpperCase() === 'OFF') {
-              setFanSpeed(0);
-              setDevicesState(prev => ({ ...prev, [device._id || device.id]: false }));
-            } else if (data.value.toUpperCase() === 'ON') {
-              setFanSpeed(5);
-              setDevicesState(prev => ({ ...prev, [device._id || device.id]: true }));
-            }
-          } else {
-            const isON = data.value === '1' || data.value.toUpperCase() === 'ON';
-            setDevicesState(prev => ({
-              ...prev,
-              [device._id || device.id]: isON
-            }));
+      // 2. Cập nhật thiết bị trong dbDevices một cách reactive
+      setDbDevices(currentDevices => 
+        currentDevices.map(d => {
+          if (d.feed_key === data.feed) {
+            return { ...d, current_status: data.value };
           }
-        }
-        return currentDevices;
-      });
+          return d;
+        })
+      );
     });
 
     socket.on("alert", (data) => {
@@ -153,6 +116,38 @@ export default function Dashboard() {
 
     return () => socket.disconnect();
   }, [setTitle]);
+
+  // Đồng bộ trạng thái quạt và thiết bị khi dbDevices hoặc selectedFanId thay đổi
+  useEffect(() => {
+    if (activeFanDevice) {
+      const speedData = Number(activeFanDevice.current_status);
+      if (!isNaN(speedData) && speedData >= 10 && speedData <= 100) {
+        setFanSpeed(Math.round(speedData / 10));
+      } else if (activeFanDevice.current_status === 'ON') {
+        setFanSpeed(5);
+      } else {
+        setFanSpeed(0);
+      }
+    }
+
+    // Đồng bộ devicesState cho tất cả thiết bị điều khiển
+    const newStates = {};
+    dbDevices.forEach(d => {
+      if (d.type !== 'Sensor') {
+        const isFan = d.name?.toLowerCase().includes('fan') || 
+                      d.name?.toLowerCase().includes('quạt') || 
+                      d.name?.toLowerCase().includes('quat') || 
+                      d.feed_key?.toLowerCase().includes('fan');
+        if (isFan) {
+          const speed = Number(d.current_status);
+          newStates[d._id || d.id] = (!isNaN(speed) && speed > 0) || d.current_status === 'ON';
+        } else {
+          newStates[d._id || d.id] = d.current_status === 'ON';
+        }
+      }
+    });
+    setDevicesState(newStates);
+  }, [dbDevices, selectedFanId]);
 
   const toggleDevice = async (deviceId) => {
     const device = dbDevices.find(d => (d._id || d.id) === deviceId);
@@ -174,31 +169,20 @@ export default function Dashboard() {
 
   const changeFanSpeed = async (speed) => {
     setFanSpeed(speed); // Cập nhật UI ngay lập tức
-    
-    // Tìm thiết bị quạt (tên chứa 'fan' hoặc 'quạt' hoặc 'quat', hoặc feed_key chứa 'fan')
-    const fanDevice = dbDevices.find(d => 
-      d.name.toLowerCase().includes('fan') || 
-      d.name.toLowerCase().includes('quạt') || 
-      d.name.toLowerCase().includes('quat') || 
-      d.feed_key?.toLowerCase().includes('fan')
-    );
 
-    if (fanDevice) {
+    if (activeFanDevice) {
       try {
         const scaledSpeed = speed * 10;
         await apiClient.post('/devices/control', {
-          id: fanDevice._id || fanDevice.id,
-          feedKey: fanDevice.feed_key,
+          id: activeFanDevice._id || activeFanDevice.id,
+          feedKey: activeFanDevice.feed_key,
           trangThai: scaledSpeed.toString()
         });
-        
-        // Nếu tốc độ > 0, coi như ON, ngược lại coi như OFF
-        setDevicesState(prev => ({ ...prev, [fanDevice._id || fanDevice.id]: speed > 0 }));
       } catch (err) {
         console.error("Lỗi điều khiển tốc độ quạt:", err);
       }
     } else {
-      console.warn("Không tìm thấy thiết bị quạt trong CSDL để điều khiển");
+      console.warn("Không tìm thấy thiết bị quạt đang kích hoạt để điều khiển");
     }
   };
 
@@ -214,7 +198,14 @@ export default function Dashboard() {
         <WelcomeBanner username={userName} />
         <RoomHeader temp={currentTemp} humidity={currentHumid} light={currentLight} username={userName} />
         <QuickControls dbDevices={dbDevices} />
-        <FanSpeedDial fanSpeed={fanSpeed} setFanSpeed={changeFanSpeed} />
+        <FanSpeedDial 
+          fanSpeed={fanSpeed} 
+          setFanSpeed={changeFanSpeed} 
+          deviceName={activeFanDevice ? `${activeFanDevice.name} (${activeFanDevice.room || 'Chưa thiết lập phòng'})` : "Quạt chưa kết nối"} 
+          fanDevices={fanDevices}
+          activeFanId={activeFanDevice?._id || activeFanDevice?.id}
+          onSelectFan={setSelectedFanId}
+        />
         <SensorChart />
       </div>
 

@@ -15,7 +15,14 @@ function getSpeedLevel(speed) {
   return SPEED_LEVELS[3];
 }
 
-export default function FanSpeedDial({ fanSpeed, setFanSpeed }) {
+export default function FanSpeedDial({ 
+  fanSpeed, 
+  setFanSpeed, 
+  deviceName, 
+  fanDevices, 
+  activeFanId, 
+  onSelectFan 
+}) {
   const level = getSpeedLevel(fanSpeed);
   const isOn = fanSpeed > 0;
   const MAX_SPEED = 10;
@@ -39,16 +46,35 @@ export default function FanSpeedDial({ fanSpeed, setFanSpeed }) {
     <div className="bg-white rounded-3xl p-8 flex flex-col shadow-sm relative overflow-hidden">
       {/* Header */}
       <div className="flex justify-between items-center mb-6 relative z-10">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <Wind
             size={20}
-            className="transition-all duration-500"
+            className="transition-all duration-500 shrink-0"
             style={{
               color: level.color,
               animation: isOn ? `spin ${Math.max(0.5, 2 - fanSpeed * 0.15)}s linear infinite` : 'none',
             }}
           />
-          <span className="font-bold text-slate-800">Fan Speed</span>
+          <div className="flex-1 min-w-0 pr-4">
+            <span className="font-bold text-slate-800 block leading-none text-xs text-slate-400 mb-1">Fan Speed</span>
+            {fanDevices && fanDevices.length > 1 ? (
+              <select
+                value={activeFanId || ""}
+                onChange={(e) => onSelectFan(e.target.value)}
+                className="bg-slate-50 border-none font-bold text-slate-700 text-sm py-1 px-2 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none w-full max-w-[180px] transition-all cursor-pointer"
+              >
+                {fanDevices.map(d => (
+                  <option key={d._id || d.id} value={d._id || d.id}>
+                    {d.name} ({d.room || 'Không rõ phòng'})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-sm font-bold text-slate-800 block truncate">
+                {deviceName || "Quạt chưa kết nối"}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold" style={{ color: level.color }}>
