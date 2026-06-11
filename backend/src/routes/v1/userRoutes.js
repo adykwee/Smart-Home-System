@@ -12,6 +12,8 @@ router.post("/register", authLimiter, userController.register);
 // Protected routes (Only logged in users)
 router.use(protect);
 
+router.put("/change-password", userController.changePassword);
+router.put("/update-profile", userController.updateProfile);
 router.get("/", userController.getAll); // Tất cả user có thể xem danh sách thành viên
 
 // Admin only routes

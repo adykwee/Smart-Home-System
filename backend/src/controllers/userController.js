@@ -137,6 +137,83 @@ const userController = {
         }
       });
     } catch (error) { next(error); }
+  },
+
+  // Đổi mật khẩu tự phục vụ cho user hiện tại
+  changePassword: async (req, res, next) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ status: "error", message: "Vui lòng nhập đầy đủ mật khẩu cũ và mới" });
+      }
+      
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ status: "error", message: "Không tìm thấy người dùng" });
+      }
+
+      const isMatch = await user.comparePassword(oldPassword);
+      if (!isMatch) {
+        return res.status(400).json({ status: "error", message: "Mật khẩu cũ không chính xác" });
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      // Log action
+      await systemLogRepo.createLog({
+        event_type: 'USER_MANAGEMENT',
+        description: `Người dùng [${user.username}] tự đổi mật khẩu thành công`,
+        user_id: user._id
+      });
+
+      res.status(200).json({ status: "success", message: "Đổi mật khẩu thành công!" });
+    } catch (error) { next(error); }
+  },
+
+  // Cập nhật thông tin profile tự phục vụ (username)
+  updateProfile: async (req, res, next) => {
+    try {
+      const { username } = req.body;
+      if (!username || !username.trim()) {
+        return res.status(400).json({ status: "error", message: "Tên đăng nhập không được để trống" });
+      }
+
+      const cleanUsername = username.trim();
+
+      // Kiểm tra trùng username với tài khoản khác
+      const userExists = await User.findOne({ username: cleanUsername });
+      if (userExists && userExists._id.toString() !== req.user.id) {
+        return res.status(400).json({ status: "error", message: "Tên đăng nhập đã được sử dụng bởi người khác" });
+      }
+
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ status: "error", message: "Không tìm thấy người dùng" });
+      }
+
+      const oldUsername = user.username;
+      user.username = cleanUsername;
+      await user.save();
+
+      // Log hành động
+      await systemLogRepo.createLog({
+        event_type: 'USER_MANAGEMENT',
+        description: `Người dùng [${oldUsername}] tự đổi tên đăng nhập thành [${user.username}]`,
+        user_id: user._id
+      });
+
+      res.status(200).json({
+        status: "success",
+        message: "Cập nhật tên đăng nhập thành công!",
+        data: {
+          _id: user._id,
+          username: user.username,
+          role: user.role,
+          token: generateToken(user._id, user.username, user.role)
+        }
+      });
+    } catch (error) { next(error); }
   }
 };
 

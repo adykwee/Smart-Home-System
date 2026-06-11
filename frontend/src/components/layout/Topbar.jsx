@@ -3,6 +3,9 @@ import { Search, Settings, Bell, ChevronDown, LogOut, Clock, AlertCircle, Info }
 import { useAuth } from "../../contexts/AuthContext";
 import { useState, useRef, useEffect } from "react";
 import apiClient from "../../services/api";
+import { io } from "socket.io-client";
+
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:5000";
 
 export default function Topbar() {
   const { user, logout } = useAuth();
@@ -11,10 +14,12 @@ export default function Topbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [recentLogs, setRecentLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
   
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
 
+  // Đóng menu khi click bên ngoài
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -28,31 +33,55 @@ export default function Topbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Lắng nghe socket.io nhận thông báo
+  useEffect(() => {
+    fetchRecentLogs(true);
+
+    const socket = io(SOCKET_URL);
+    socket.on("alert", (data) => {
+      const newLog = {
+        _id: Date.now().toString(),
+        event_type: 'ALERT',
+        description: data.message,
+        created_at: data.timestamp || new Date(),
+        device_id: { name: data.feed }
+      };
+      setRecentLogs(prev => [newLog, ...prev].slice(0, 5));
+      setHasUnread(true);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const fetchRecentLogs = async () => {
+  const fetchRecentLogs = async (silent = false) => {
     try {
-      setLoadingLogs(true);
+      if (!silent) setLoadingLogs(true);
       const res = await apiClient.get("/system-logs");
       const data = res.data;
       const logs = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
       setRecentLogs(logs.slice(0, 5));
     } catch (error) {
-      console.error("Lỗi tải thông báo:", error);
+      console.error(error);
     } finally {
-      setLoadingLogs(false);
+      if (!silent) setLoadingLogs(false);
     }
   };
 
   const handleNotifClick = () => {
     if (!notifOpen) {
       fetchRecentLogs();
+      setHasUnread(false);
     }
     setNotifOpen(!notifOpen);
   };
+
   return (
     <header className="h-24 flex items-center justify-between px-10 pt-4 z-10">
       <div className="relative w-[400px]">
@@ -76,7 +105,7 @@ export default function Topbar() {
             className="relative p-2 text-slate-600 hover:text-[#7048e8] hover:bg-white rounded-full transition"
           >
             <Bell size={22} strokeWidth={2} />
-            {recentLogs.length > 0 && !notifOpen && (
+            {hasUnread && !notifOpen && (
               <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 border-2 border-[#f4f5f9] rounded-full"></span>
             )}
           </button>
@@ -95,7 +124,14 @@ export default function Topbar() {
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {recentLogs.map(log => (
-                      <div key={log._id} className="p-4 hover:bg-slate-50 transition-colors cursor-pointer">
+                      <div 
+                        key={log._id} 
+                        onClick={() => {
+                          setNotifOpen(false);
+                          navigate('/logs');
+                        }}
+                        className="p-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
                         <div className="flex gap-3">
                           <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                             log.event_type === 'ALERT' ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'

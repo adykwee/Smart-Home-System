@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ThermometerSun, Cloud, CloudRain, Sun, CloudSnow, CloudLightning, Wind, Droplets, Loader2 } from "lucide-react";
 
-// Dùng OpenWeatherMap miễn phí. Mặc định Hà Nội, có thể đổi thành thành phố khác.
 const CITY = "Ho Chi Minh City";
 const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || ""; 
 const WEATHER_URL = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric&lang=vi`;
@@ -22,6 +21,14 @@ export default function WelcomeBanner({ username = "User" }) {
 
   useEffect(() => {
     if (!API_KEY) {
+      setWeather({
+        temp: 32,
+        feels_like: 35,
+        humidity: 70,
+        description: "nhiều mây",
+        icon: "03d",
+        wind: 10,
+      });
       setWeatherLoading(false);
       return;
     }
@@ -35,7 +42,7 @@ export default function WelcomeBanner({ username = "User" }) {
             humidity: data.main.humidity,
             description: data.weather[0].description,
             icon: data.weather[0].icon,
-            wind: Math.round(data.wind.speed * 3.6), // m/s -> km/h
+            wind: Math.round(data.wind.speed * 3.6),
           });
         }
       })
@@ -43,7 +50,6 @@ export default function WelcomeBanner({ username = "User" }) {
       .finally(() => setWeatherLoading(false));
   }, []);
 
-  // Gradient theo thời gian trong ngày
   const hour = new Date().getHours();
   const isDaytime = hour >= 6 && hour < 18;
   const gradient = isDaytime
@@ -62,7 +68,6 @@ export default function WelcomeBanner({ username = "User" }) {
           Chào mừng bạn về nhà. Hệ thống đang hoạt động ổn định.
         </p>
 
-        {/* Weather Info */}
         <div className="flex flex-col gap-2">
           {weatherLoading ? (
             <div className={`flex items-center gap-2 ${subTextColor}`}>
@@ -93,10 +98,10 @@ export default function WelcomeBanner({ username = "User" }) {
             <>
               <div className={`flex items-center gap-2 ${textColor} font-semibold`}>
                 <ThermometerSun size={18} />
-                <span>Thêm VITE_OPENWEATHER_API_KEY vào .env để xem thời tiết thực</span>
+                <span>Không thể tải dữ liệu thời tiết thời gian thực</span>
               </div>
               <p className={`${subTextColor} text-xs`}>
-                Đăng ký miễn phí tại openweathermap.org
+                Đang hiển thị dữ liệu thời tiết mặc định.
               </p>
             </>
           )}
@@ -104,19 +109,11 @@ export default function WelcomeBanner({ username = "User" }) {
       </div>
 
       <div className="absolute right-0 bottom-0 h-full w-1/3 flex items-end justify-end pointer-events-none opacity-90">
-        {weather?.icon ? (
-          <img
-            src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
-            alt={weather.description}
-            className="h-32 w-32 object-contain mr-4 mb-4 drop-shadow-lg"
-          />
-        ) : (
-          <img
-            src="https://api.dicebear.com/7.x/shapes/svg?seed=weather&backgroundColor=transparent"
-            className="h-[120%] object-cover transform translate-x-10 translate-y-4"
-            alt="illustration"
-          />
-        )}
+        <img
+          src="https://api.dicebear.com/7.x/shapes/svg?seed=weather&backgroundColor=transparent"
+          className="h-[120%] object-cover transform translate-x-10 translate-y-4"
+          alt="illustration"
+        />
       </div>
     </div>
   );

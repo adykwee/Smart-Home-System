@@ -3,13 +3,11 @@ import apiClient from "../services/api";
 import {
   RefreshCw,
   LayoutGrid,
-  Zap
+  Zap,
+  Plus
 } from "lucide-react";
 import DeviceCard from "../components/DeviceCard";
 import { usePage } from "../contexts/PageContext";
-
-// Base URL từ env
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Devices() {
   const { setTitle } = usePage();
@@ -22,6 +20,19 @@ export default function Devices() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+
+  // States cho việc chỉnh sửa và thêm mới
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', room: '', type: '' });
+  
+  const [isAddingDevice, setIsAddingDevice] = useState(false);
+  const [addForm, setAddForm] = useState({
+    name: '',
+    feed_key: '',
+    type: 'Actuator',
+    room: '',
+    current_status: 'OFF'
+  });
 
   const fetchDevices = async (showLoading = true) => {
     try {
@@ -41,7 +52,6 @@ export default function Devices() {
   useEffect(() => {
     fetchDevices();
 
-    // Polling mỗi 3 giây theo yêu cầu USER
     const interval = setInterval(() => {
       fetchDevices(false);
     }, 3000);
@@ -74,7 +84,6 @@ export default function Devices() {
         trangThai: newStatus
       });
 
-      // Cập nhật state nội bộ ngay lập tức để UX mượt
       setDevices(prev => prev.map(d =>
         (d._id || d.id) === deviceId ? { ...d, current_status: newStatus } : d
       ));
@@ -85,9 +94,6 @@ export default function Devices() {
       setUpdatingId(null);
     }
   };
-
-  const [editingDevice, setEditingDevice] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', room: '', type: '' });
 
   const handleEdit = (device) => {
     setEditingDevice(device);
@@ -108,6 +114,30 @@ export default function Devices() {
     } catch (err) {
       console.error("Lỗi khi cập nhật thiết bị:", err);
       alert("Không thể cập nhật thiết bị!");
+    }
+  };
+
+  const handleAddDevice = async (e) => {
+    e.preventDefault();
+    if (!addForm.name.trim() || !addForm.feed_key.trim()) {
+      alert("Vui lòng điền đầy đủ Tên thiết bị và Feed Key!");
+      return;
+    }
+
+    try {
+      const res = await apiClient.post('/devices', addForm);
+      setDevices(prev => [...prev, res.data.data]);
+      setIsAddingDevice(false);
+      setAddForm({
+        name: '',
+        feed_key: '',
+        type: 'Actuator',
+        room: '',
+        current_status: 'OFF'
+      });
+    } catch (err) {
+      console.error("Lỗi khi thêm thiết bị:", err);
+      alert(err.response?.data?.message || "Không thể thêm thiết bị. Feed Key có thể đã tồn tại!");
     }
   };
 
@@ -133,7 +163,23 @@ export default function Devices() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700">
+      
+      {/* Header Panel */}
+      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div>
+          <h2 className="text-xl font-bold text-slate-800">Quản lý thiết bị</h2>
+          <p className="text-slate-500 text-sm mt-1">Đăng ký và điều khiển thiết bị trong hệ thống</p>
+        </div>
+        <button
+          onClick={() => setIsAddingDevice(true)}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all"
+        >
+          <Plus size={20} />
+          <span>Thêm thiết bị mới</span>
+        </button>
+      </div>
+
       {error ? (
         <div className="bg-rose-50 border border-rose-100 p-6 rounded-3xl text-rose-600 flex items-center gap-4">
           <div className="p-3 bg-rose-500 text-white rounded-2xl">
@@ -194,11 +240,88 @@ export default function Devices() {
             )}
 
             {devices.length === 0 && (
-              <div className="flex flex-col items-center justify-center min-h-[200px] text-slate-400 gap-4">
+              <div className="flex flex-col items-center justify-center min-h-[200px] text-slate-400 bg-white rounded-3xl p-10 border border-slate-100">
                 <p className="font-medium">Chưa có thiết bị nào trong hệ thống.</p>
               </div>
             )}
           </div>
+
+          {/* Add Device Modal */}
+          {isAddingDevice && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold text-slate-800">Đăng ký thiết bị mới</h3>
+                  <button 
+                    onClick={() => setIsAddingDevice(false)}
+                    className="w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors text-xl font-bold"
+                  >
+                    &times;
+                  </button>
+                </div>
+                <form onSubmit={handleAddDevice} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Tên thiết bị</label>
+                    <input 
+                      type="text" 
+                      value={addForm.name}
+                      onChange={(e) => setAddForm({...addForm, name: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                      placeholder="VD: Quạt trần phòng khách"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Feed Key (Adafruit IO)</label>
+                    <input 
+                      type="text" 
+                      value={addForm.feed_key}
+                      onChange={(e) => setAddForm({...addForm, feed_key: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                      placeholder="VD: bbstation-fan"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Loại thiết bị</label>
+                    <select
+                      value={addForm.type}
+                      onChange={(e) => setAddForm({...addForm, type: e.target.value, current_status: e.target.value === 'Sensor' ? '0' : 'OFF'})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium text-slate-700"
+                    >
+                      <option value="Actuator">Điều khiển (Quạt, Đèn, LED...)</option>
+                      <option value="Sensor">Cảm biến (Nhiệt độ, Độ ẩm, Ánh sáng...)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Phòng (Vị trí)</label>
+                    <input 
+                      type="text" 
+                      value={addForm.room}
+                      onChange={(e) => setAddForm({...addForm, room: e.target.value})}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                      placeholder="VD: Phòng ngủ, Phòng khách..."
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button 
+                      type="button"
+                      onClick={() => setIsAddingDevice(false)}
+                      className="flex-1 py-3.5 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors text-sm"
+                    >
+                      Hủy
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-1 py-3.5 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all text-sm"
+                    >
+                      Thêm thiết bị
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* Edit Modal */}
           {editingDevice && (
@@ -212,7 +335,7 @@ export default function Devices() {
                       type="text" 
                       value={editForm.name}
                       onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
                       placeholder="VD: Cảm biến phòng khách"
                       required
                     />
@@ -223,7 +346,7 @@ export default function Devices() {
                       type="text" 
                       value={editForm.room}
                       onChange={(e) => setEditForm({...editForm, room: e.target.value})}
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
                       placeholder="VD: Phòng khách, Ban công..."
                     />
                   </div>
@@ -231,13 +354,13 @@ export default function Devices() {
                     <button 
                       type="button"
                       onClick={() => setEditingDevice(null)}
-                      className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                      className="flex-1 py-3.5 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors text-sm"
                     >
                       Hủy
                     </button>
                     <button 
                       type="submit"
-                      className="flex-1 py-3 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
+                      className="flex-1 py-3.5 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all text-sm"
                     >
                       Lưu thay đổi
                     </button>

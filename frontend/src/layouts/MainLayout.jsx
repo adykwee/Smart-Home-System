@@ -15,18 +15,45 @@ export default function MainLayout() {
   useEffect(() => {
     const socket = io(SOCKET_URL);
 
-    socket.on("threshold_alert", (data) => {
-      const newAlert = {
-        id: Date.now(),
-        message: data.message,
-        time: new Date().toLocaleTimeString()
-      };
-      
-      setAlerts(prev => [newAlert, ...prev].slice(0, 5));
+    socket.on("alert", (data) => {
+      // Còi báo động dùng Web Audio API
+      const soundEnabled = localStorage.getItem("setting_sound_alert") !== "false";
+      if (soundEnabled) {
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const playBeep = (delay, frequency, duration) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(frequency, audioCtx.currentTime + delay);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration - 0.02);
+            osc.start(audioCtx.currentTime + delay);
+            osc.stop(audioCtx.currentTime + delay + duration);
+          };
+          // Bíp 2 tiếng
+          playBeep(0, 880, 0.12);
+          playBeep(0.18, 880, 0.12);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
 
-      setTimeout(() => {
-        setAlerts(prev => prev.filter(a => a.id !== newAlert.id));
-      }, 5000);
+      // Hiển thị toast notification
+      const toastEnabled = localStorage.getItem("setting_toast_alert") !== "false";
+      if (toastEnabled) {
+        const newAlert = {
+          id: Date.now(),
+          message: data.message,
+          time: new Date().toLocaleTimeString()
+        };
+        setAlerts(prev => [newAlert, ...prev].slice(0, 5));
+        setTimeout(() => {
+          setAlerts(prev => prev.filter(a => a.id !== newAlert.id));
+        }, 5000);
+      }
     });
 
     return () => {
@@ -41,7 +68,7 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen font-sans text-slate-800 bg-[#f4f5f9] relative overflow-hidden">
       
-      {/* Toast Notifications */}
+      {/* Toast box */}
       <div className="absolute top-20 right-8 z-50 flex flex-col gap-2">
         {alerts.map(alert => (
           <div key={alert.id} className="bg-rose-500 text-white px-4 py-3 rounded-xl shadow-lg shadow-rose-500/30 flex items-start gap-3 animate-slide-in-right max-w-sm">
@@ -61,7 +88,6 @@ export default function MainLayout() {
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <Topbar />
-
         <main className="flex-1 overflow-x-hidden overflow-y-auto px-10 pb-10">
           <Outlet />
         </main>

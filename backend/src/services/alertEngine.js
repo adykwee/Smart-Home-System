@@ -1,28 +1,23 @@
 const Threshold = require("../models/thresholdModel");
 const systemLogRepo = require("../repositories/SystemLogRepository");
 
-// --- STRATEGY PATTERN ---
-
-// Giao diện (Interface) chung cho mọi Strategy kiểm tra cảnh báo
 class AlertStrategy {
   check(value, threshold) {
     throw new Error("Method 'check()' must be implemented.");
   }
 }
 
-// Concrete Strategy 1: Kiểm tra vượt ngưỡng trên (Max)
 class MaxThresholdStrategy extends AlertStrategy {
   check(value, threshold) {
     if (threshold.max_value !== undefined && threshold.max_value !== null) {
       if (value > threshold.max_value) {
-        return `Vượt ngưỡng cảnh báo trên! Giá trị hiện tại: ${value}, Ngưỡng tối đa: ${threshold.max_value}`;
+        return `Vượt ngưỡng cảnh báo! Giá trị hiện tại: ${value}, Ngưỡng tối đa: ${threshold.max_value}`;
       }
     }
     return null;
   }
 }
 
-// Concrete Strategy 2: Kiểm tra vượt ngưỡng dưới (Min)
 class MinThresholdStrategy extends AlertStrategy {
   check(value, threshold) {
     if (threshold.min_value !== undefined && threshold.min_value !== null) {
@@ -34,7 +29,6 @@ class MinThresholdStrategy extends AlertStrategy {
   }
 }
 
-// Context Class
 class AlertContext {
   constructor() {
     this.strategies = [new MaxThresholdStrategy(), new MinThresholdStrategy()];
@@ -42,8 +36,6 @@ class AlertContext {
 
   async checkThresholds(deviceId, feedKey, value, io) {
     try {
-      // 1. Lấy cấu hình ngưỡng của thiết bị từ DB
-      // Đảm bảo deviceId là string để query chính xác
       const deviceIdStr = deviceId.toString();
       const thresholds = await Threshold.find({ device_id: deviceIdStr });
       
@@ -54,20 +46,26 @@ class AlertContext {
           const alertMessage = strategy.check(value, threshold);
 
           if (alertMessage) {
-            console.log(`[ALERT] Thiết bị ${deviceIdStr}: ${alertMessage}`);
+            let metricName = "Cảm biến";
+            if (threshold.metric_type === "temperature") metricName = "Nhiệt độ";
+            else if (threshold.metric_type === "humidity") metricName = "Độ ẩm";
+            else if (threshold.metric_type === "light") metricName = "Ánh sáng";
 
-            // 2. Ghi Log Cảnh Báo (Sử dụng Repository) - Dùng 'ALERT' để đồng bộ với Frontend
+            const formattedMessage = `[Cảnh báo ${metricName}] ${alertMessage}`;
+            console.log(`[ALERT] ${deviceIdStr}: ${formattedMessage}`);
+
+            // Lưu log cảnh báo vào DB
             await systemLogRepo.createLog({
               event_type: 'ALERT',
-              description: `[${feedKey}] ${alertMessage}`,
+              description: `[${feedKey}] ${formattedMessage}`,
               device_id: deviceId
             });
 
-            // 3. Emit Socket.IO (Observer Pattern)
+            // Gửi thông báo real-time qua socket
             io.emit('alert', {
               device_id: deviceId,
               feed: feedKey,
-              message: alertMessage,
+              message: formattedMessage,
               timestamp: new Date()
             });
           }

@@ -149,7 +149,6 @@ export default function Dashboard() {
 
     socket.on("alert", (data) => {
       console.log("[SOCKET ALERT]", data);
-      alert(`⚠️ CẢNH BÁO: ${data.message}`);
     });
 
     return () => socket.disconnect();
