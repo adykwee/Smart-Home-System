@@ -19,7 +19,7 @@ const SCENES = [
         if (key.includes('led') || key.includes('light') || name.includes('đèn')) {
           commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: 'ON' }));
         } else if (key.includes('fan') || name.includes('quạt')) {
-          commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: 'OFF' }));
+          commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: '0' }));
         }
       });
       await Promise.allSettled(commands);
@@ -35,7 +35,12 @@ const SCENES = [
     action: async (dbDevices) => {
       const commands = dbDevices
         .filter(d => d.type === 'Actuator')
-        .map(d => apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: 'OFF' }));
+        .map(d => {
+          const key = d.feed_key?.toLowerCase() || '';
+          const name = d.name?.toLowerCase() || '';
+          const status = (key.includes('fan') || name.includes('quạt')) ? '0' : 'OFF';
+          return apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: status });
+        });
       await Promise.allSettled(commands);
     }
   },
@@ -55,7 +60,7 @@ const SCENES = [
         if (key.includes('led') || key.includes('light') || name.includes('đèn')) {
           commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: 'OFF' }));
         } else if (key.includes('fan') || name.includes('quạt')) {
-          commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: 'ON' }));
+          commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: '50' }));
         }
       });
       await Promise.allSettled(commands);
@@ -74,8 +79,10 @@ const SCENES = [
       actuators.forEach(d => {
         const key = d.feed_key?.toLowerCase() || '';
         const name = d.name?.toLowerCase() || '';
-        if (key.includes('led') || key.includes('light') || key.includes('fan') || name.includes('đèn') || name.includes('quạt')) {
+        if (key.includes('led') || key.includes('light') || name.includes('đèn')) {
           commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: 'OFF' }));
+        } else if (key.includes('fan') || name.includes('quạt')) {
+          commands.push(apiClient.post('/devices/control', { id: d._id, feedKey: d.feed_key, trangThai: '0' }));
         }
       });
       await Promise.allSettled(commands);

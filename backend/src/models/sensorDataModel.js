@@ -5,6 +5,7 @@ const sensorDataSchema = new mongoose.Schema({
   temperature: { type: Number },
   humidity: { type: Number },
   light: { type: Number },
+  motion: { type: Number },
 }, { timestamps: true });
 
 const SensorData = mongoose.models.SensorData || mongoose.model('SensorData', sensorDataSchema);

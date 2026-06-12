@@ -70,50 +70,78 @@ export default function SensorChart() {
         </button>
       </div>
 
-      <div className="h-[280px] w-full">
-        {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8884d8" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorHumid" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="time" tick={{fontSize: 10}} tickLine={false} axisLine={false} />
-              <YAxis tick={{fontSize: 10}} tickLine={false} axisLine={false} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              />
-              <Legend verticalAlign="top" height={36}/>
-              
-              <Area 
-                type="monotone" dataKey="temperature" name="Nhiệt độ (°C)" 
-                stroke="#8884d8" fillOpacity={1} fill="url(#colorTemp)" 
-                strokeWidth={2} connectNulls 
-              />
-              <Area 
-                type="monotone" dataKey="humidity" name="Độ ẩm (%)" 
-                stroke="#82ca9d" fillOpacity={1} fill="url(#colorHumid)" 
-                strokeWidth={2} connectNulls 
-              />
-              <Area 
-                type="monotone" dataKey="light" name="Ánh sáng (lux)" 
-                stroke="#ffc658" fill="transparent" 
-                strokeWidth={2} connectNulls 
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="flex items-center justify-center h-full text-slate-400 italic text-sm">
-            Đang đợi dữ liệu cảm biến...
-          </div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Chart Nhiệt độ */}
+        <div className="h-[220px] w-full bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50">
+          <h4 className="text-xs font-bold text-slate-500 mb-2">Nhiệt độ (°C)</h4>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="time" tick={{fontSize: 9}} tickLine={false} axisLine={false} />
+                <YAxis tick={{fontSize: 9}} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                <Area type="monotone" dataKey="temperature" stroke="#ef4444" fillOpacity={1} fill="url(#colorTemp)" strokeWidth={2} connectNulls />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Đang đợi dữ liệu...</div>
+          )}
+        </div>
+
+        {/* Chart Độ ẩm */}
+        <div className="h-[220px] w-full bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50">
+          <h4 className="text-xs font-bold text-slate-500 mb-2">Độ ẩm (%)</h4>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorHumid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="time" tick={{fontSize: 9}} tickLine={false} axisLine={false} />
+                <YAxis tick={{fontSize: 9}} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                <Area type="monotone" dataKey="humidity" stroke="#3b82f6" fillOpacity={1} fill="url(#colorHumid)" strokeWidth={2} connectNulls />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Đang đợi dữ liệu...</div>
+          )}
+        </div>
+
+        {/* Chart Ánh sáng */}
+        <div className="h-[220px] w-full bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50">
+          <h4 className="text-xs font-bold text-slate-500 mb-2">Ánh sáng (Lux)</h4>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorLight" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#eab308" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#eab308" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="time" tick={{fontSize: 9}} tickLine={false} axisLine={false} />
+                <YAxis tick={{fontSize: 9}} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                <Area type="monotone" dataKey="light" stroke="#eab308" fillOpacity={1} fill="url(#colorLight)" strokeWidth={2} connectNulls />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-400 italic text-xs">Đang đợi dữ liệu...</div>
+          )}
+        </div>
       </div>
     </div>
   );

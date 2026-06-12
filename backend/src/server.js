@@ -37,6 +37,7 @@ const alertEngine = require("./services/alertEngine");
 const startScheduleEngine = require("./services/scheduleEngine");
 const deviceRepo = require("./repositories/DeviceRepository");
 const DeviceFactory = require("./factories/DeviceFactory");
+const systemLogRepo = require("./repositories/SystemLogRepository");
 
 // Lắng nghe dữ liệu real-time từ MQTT để bắn sang Web qua Socket.IO
 mqttClient.on("message", async (topic, message) => {
@@ -66,13 +67,33 @@ mqttClient.on("message", async (topic, message) => {
         device_id: device._id,
         temperature: feed.includes('temp') ? numericValue : undefined,
         humidity: feed.includes('humid') ? numericValue : undefined,
-        light: (feed.includes('light') || feed.includes('lux')) ? numericValue : undefined
+        light: (feed.includes('light') || feed.includes('lux')) ? numericValue : undefined,
+        motion: (feed.includes('motion') || feed.includes('pir')) ? numericValue : undefined
       });
 
       // Sensors lưu giá trị số vào current_status (không đổi ON/OFF)
       await deviceRepo.updateStatus(device._id, data);
 
-      // Kiểm tra ngưỡng (Strategy Pattern)
+      // Xử lý cảnh báo chuyển động
+      if ((feed.includes('motion') || feed.includes('pir')) && numericValue === 1) {
+        const alertMessage = "Phát hiện có người chuyển động!";
+        console.log(`[ALERT] Thiết bị ${device._id}: ${alertMessage}`);
+        
+        await systemLogRepo.createLog({
+          event_type: 'ALERT',
+          description: `[${feed}] ${alertMessage}`,
+          device_id: device._id
+        });
+
+        io.emit('alert', {
+          device_id: device._id,
+          feed: feed,
+          message: alertMessage,
+          timestamp: new Date()
+        });
+      }
+
+      // Kiểm tra ngưỡng (Strategy Pattern) cho các loại sensor khác
       await alertEngine.checkThresholds(device._id, feed, numericValue, io);
 
     } else {

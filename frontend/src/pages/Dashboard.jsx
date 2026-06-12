@@ -11,6 +11,7 @@ import SensorChart from "../components/dashboard/SensorChart";
 import apiClient from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { io } from "socket.io-client";
+import { toast } from "react-hot-toast";
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:5000";
 
@@ -149,7 +150,15 @@ export default function Dashboard() {
 
     socket.on("alert", (data) => {
       console.log("[SOCKET ALERT]", data);
-      alert(`⚠️ CẢNH BÁO: ${data.message}`);
+      toast.error(`CẢNH BÁO: ${data.message}`, {
+        duration: 5000,
+        style: {
+          borderRadius: '12px',
+          background: '#333',
+          color: '#fff',
+        },
+        icon: '🚨',
+      });
     });
 
     return () => socket.disconnect();
@@ -160,12 +169,29 @@ export default function Dashboard() {
     if (!device) return;
 
     const newStatus = !devicesState[deviceId];
+    
+    const isFan = device.name?.toLowerCase().includes('fan') || 
+                  device.name?.toLowerCase().includes('quạt') || 
+                  device.name?.toLowerCase().includes('quat') || 
+                  device.feed_key?.toLowerCase().includes('fan');
+
+    let payloadStatus = newStatus ? 'ON' : 'OFF';
+
+    if (isFan) {
+      if (newStatus) {
+        payloadStatus = '50';
+        setFanSpeed(5);
+      } else {
+        payloadStatus = '0';
+        setFanSpeed(0);
+      }
+    }
 
     try {
       await apiClient.post('/devices/control', {
         id: deviceId,
         feedKey: device.feed_key,
-        trangThai: newStatus ? 'ON' : 'OFF'
+        trangThai: payloadStatus
       });
       setDevicesState(prev => ({ ...prev, [deviceId]: newStatus }));
     } catch (err) {
