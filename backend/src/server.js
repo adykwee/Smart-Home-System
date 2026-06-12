@@ -36,6 +36,7 @@ app.set("io", io); // Cho phép các controller truy cập io
 const alertEngine = require("./services/alertEngine");
 const startScheduleEngine = require("./services/scheduleEngine");
 const deviceRepo = require("./repositories/DeviceRepository");
+const systemLogRepo = require("./repositories/SystemLogRepository");
 const DeviceFactory = require("./factories/DeviceFactory");
 
 // Lắng nghe dữ liệu real-time từ MQTT để bắn sang Web qua Socket.IO
@@ -72,7 +73,29 @@ mqttClient.on("message", async (topic, message) => {
       // Sensors lưu giá trị số vào current_status (không đổi ON/OFF)
       await deviceRepo.updateStatus(device._id, data);
 
-      // Kiểm tra ngưỡng (Strategy Pattern)
+      // Tự động kích hoạt thông báo khi phát hiện chuyển động (kể cả không cấu hình ngưỡng)
+      const isMotionSensor = feed.toLowerCase().includes('motion') || 
+                             (device.name && device.name.toLowerCase().includes('chuyển động'));
+      if (isMotionSensor && (data === '1' || data.toLowerCase() === 'active')) {
+        const msg = `[Cảnh báo] Phát hiện chuyển động tại khu vực [${device.room || 'Chưa gán phòng'}]`;
+        
+        io.emit('alert', {
+          device_id: device._id,
+          feed: feed,
+          message: msg,
+          room: device.room || 'Chưa gán phòng',
+          type: 'motion',
+          timestamp: new Date()
+        });
+
+        await systemLogRepo.createLog({
+          event_type: 'ALERT',
+          description: msg,
+          device_id: device._id
+        });
+      }
+
+      // Kiểm tra ngưỡng khác (Strategy Pattern)
       await alertEngine.checkThresholds(device._id, feed, numericValue, io);
 
     } else {

@@ -6,7 +6,7 @@ class DeviceFactory {
     const key = feed_key.toLowerCase();
 
     // Phân loại Sensor
-    if (key.includes('sensor') || key.includes('temp') || key.includes('humid') || key.includes('light') || key.includes('lux')) {
+    if (key.includes('sensor') || key.includes('temp') || key.includes('humid') || key.includes('light') || key.includes('lux') || key.includes('motion')) {
       type = 'Sensor';
     }
 
@@ -25,6 +25,9 @@ class DeviceFactory {
       type = 'Sensor';
     } else if (key.includes('light') && key.includes('sensor')) {
       name = 'Cảm biến ánh sáng' + ' (' + key + ')';
+      type = 'Sensor';
+    } else if (key.includes('motion')) {
+      name = 'Cảm biến chuyển động' + ' (' + key + ')';
       type = 'Sensor';
     }
 

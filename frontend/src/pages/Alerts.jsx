@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePage } from "../contexts/PageContext";
 import apiClient from "../services/api";
-import { AlertTriangle, Plus, Trash2, Edit2, Check, X, Thermometer, Droplets, Zap } from "lucide-react";
+import { AlertTriangle, Plus, Trash2, Edit2, Check, X, Thermometer, Droplets, Zap, Activity } from "lucide-react";
 
 export default function Alerts() {
   const { setTitle } = usePage();
@@ -104,6 +104,7 @@ export default function Alerts() {
     if (!type) return <Zap className="text-slate-400" />;
     if (type.toLowerCase().includes("temp")) return <Thermometer className="text-orange-400" />;
     if (type.toLowerCase().includes("humid")) return <Droplets className="text-blue-400" />;
+    if (type.toLowerCase().includes("motion")) return <Activity className="text-red-400" />;
     return <Zap className="text-yellow-400" />;
   };
 
@@ -156,6 +157,7 @@ export default function Alerts() {
                   <option value="temperature">Nhiệt độ (°C)</option>
                   <option value="humidity">Độ ẩm (%)</option>
                   <option value="light">Ánh sáng (Lux)</option>
+                  <option value="motion">Chuyển động (1 / 0)</option>
                 </select>
               </div>
 
@@ -220,7 +222,7 @@ export default function Alerts() {
                     <p className="font-bold text-slate-700">
                       {t.min_value ?? "-"} → {t.max_value ?? "-"}
                       <span className="text-xs font-normal text-slate-400 ml-1">
-                        {t.metric_type === 'temperature' ? '°C' : t.metric_type === 'humidity' ? '%' : ''}
+                        {t.metric_type === 'temperature' ? '°C' : t.metric_type === 'humidity' ? '%' : t.metric_type === 'light' ? 'Lux' : ''}
                       </span>
                     </p>
                   </div>

@@ -12,6 +12,7 @@ import apiClient from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { io } from "socket.io-client";
 
+
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:5000";
 
 export default function Dashboard() {
@@ -54,6 +55,7 @@ export default function Dashboard() {
   const [devicesState, setDevicesState] = useState({});
   const [dbDevices, setDbDevices] = useState([]);
   const [selectedFanId, setSelectedFanId] = useState(null);
+  const [motionAlert, setMotionAlert] = useState(null);
 
   // Lọc ra tất cả các thiết bị quạt
   const fanDevices = dbDevices.filter(d => 
@@ -64,6 +66,16 @@ export default function Dashboard() {
   );
 
   const activeFanDevice = fanDevices.find(d => (d._id || d.id) === selectedFanId) || fanDevices[0];
+
+  useEffect(() => {
+    // Auto-clear motion alert after 8s
+    if (motionAlert) {
+      const timer = setTimeout(() => {
+        setMotionAlert(null);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [motionAlert]);
 
   useEffect(() => {
     setTitle("");
@@ -112,10 +124,17 @@ export default function Dashboard() {
 
     socket.on("alert", (data) => {
       console.log("[SOCKET ALERT]", data);
+      if (data.type === 'motion') {
+        setMotionAlert({
+          message: data.message,
+          timestamp: new Date(data.timestamp || new Date()),
+          room: data.room || "Phòng khách"
+        });
+      }
     });
 
     return () => socket.disconnect();
-  }, [setTitle]);
+  }, [setTitle, motionAlert]);
 
   // Đồng bộ trạng thái quạt và thiết bị khi dbDevices hoặc selectedFanId thay đổi
   useEffect(() => {
@@ -196,7 +215,9 @@ export default function Dashboard() {
       {/* CỘT TRÁI (70%) */}
       <div className="flex-1 flex flex-col gap-8">
         <WelcomeBanner username={userName} />
-        <RoomHeader temp={currentTemp} humidity={currentHumid} light={currentLight} username={userName} />
+        
+        {/* Banner cảnh báo chuyển động real-time */}
+        <RoomHeader temp={currentTemp} humidity={currentHumid} light={currentLight} username={userName} motionAlert={motionAlert} />
         <QuickControls dbDevices={dbDevices} />
         <FanSpeedDial 
           fanSpeed={fanSpeed} 

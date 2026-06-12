@@ -1,6 +1,7 @@
 const Device = require("../models/deviceModel");
 const mqttClient = require("../config/mqtt");
 const systemLogRepo = require("../repositories/SystemLogRepository");
+const adafruitService = require("../services/adafruitService");
 
 const deviceController = {
   getAll: async (req, res, next) => {
@@ -58,6 +59,12 @@ const deviceController = {
         user_id: req.user ? req.user._id : null
       });
 
+      // Tự động tạo feed trên Adafruit IO
+      if (device.feed_key) {
+        adafruitService.createFeed(device.feed_key, device.name)
+          .catch(err => console.error("Lỗi khi tự động tạo feed trên Adafruit:", err));
+      }
+
       res.status(201).json({ status: "success", data: device });
     } catch (error) { next(error); }
   },
@@ -87,6 +94,12 @@ const deviceController = {
         description: `Đã xóa thiết bị: [${device.name}]`,
         user_id: req.user ? req.user._id : null
       });
+
+      // Tự động xóa feed trên Adafruit IO
+      if (device.feed_key) {
+        adafruitService.deleteFeed(device.feed_key)
+          .catch(err => console.error("Lỗi khi tự động xóa feed trên Adafruit:", err));
+      }
 
       res.status(200).json({ status: "success", message: "Deleted" });
     } catch (error) { next(error); }

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Refrigerator, Router, Speaker, LampDesk, Thermometer, Droplets, Sun, Zap, HelpCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Refrigerator, Router, Speaker, LampDesk, Thermometer, Droplets, Sun, Zap, HelpCircle, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardDevices({ devicesState, toggleDevice, sensorValues = {}, dbDevices = [] }) {
@@ -20,6 +20,9 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
       }
       if (name.includes('light') || name.includes('anhsang') || feed.includes('light') || feed.includes('anhsang')) {
         return { icon: Sun, unit: 'Lux', bg: 'bg-[#33ccff]', label: 'Ánh sáng' };
+      }
+      if (name.includes('motion') || name.includes('chuyen dong') || name.includes('chuyendọng') || feed.includes('motion') || feed.includes('chuyen-dong') || feed.includes('chuyendọng')) {
+        return { icon: Activity, unit: '', bg: 'bg-[#ff5b5b]', label: 'Chuyển động' };
       }
       return { icon: Thermometer, unit: '', bg: 'bg-slate-400', label: 'Cảm biến' };
     }
@@ -108,7 +111,10 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
                     </span>
                     {isSensor && (
                       <span className="text-lg font-black text-white ml-auto">
-                        {currentVal || '--'}<span className="text-xs font-bold ml-0.5">{config.unit}</span>
+                        {config.label === 'Chuyển động' 
+                          ? (currentVal === '1' || currentVal === 1 || String(currentVal).toLowerCase() === 'active' ? 'Phát hiện' : 'Yên tĩnh')
+                          : (currentVal || '--')}
+                        <span className="text-xs font-bold ml-0.5">{config.unit}</span>
                       </span>
                     )}
                   </div>

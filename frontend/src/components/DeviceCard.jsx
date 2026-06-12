@@ -1,4 +1,4 @@
-import { Fan, Lightbulb, Thermometer, Droplets, HelpCircle, Trash2, Settings, Sun } from "lucide-react";
+import { Fan, Lightbulb, Thermometer, Droplets, HelpCircle, Trash2, Settings, Sun, Activity } from "lucide-react";
 
 const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
   const isFan = device.name?.toLowerCase().includes("quạt") || 
@@ -21,6 +21,7 @@ const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
     if (lowerName?.includes("nhiệt") || lowerName?.includes("temp")) return <Thermometer />;
     if (lowerName?.includes("ẩm") || lowerName?.includes("humid")) return <Droplets />;
     if (lowerName?.includes("ánh sáng") || lowerName?.includes("light") || lowerName?.includes("lux")) return <Sun />;
+    if (lowerName?.includes("motion") || lowerName?.includes("chuyển động") || lowerName?.includes("chuyen dong")) return <Activity />;
 
     return <HelpCircle />;
   };
@@ -103,7 +104,27 @@ const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
             <span className={`text-sm font-medium ${
               (isOn || device.type === "Sensor") ? (isOn ? "text-indigo-100" : "text-emerald-600") : "text-slate-500"
             }`}>
-              {device.type === "Sensor" ? "Đang giám sát" : (isOn ? "Đang bật" : "Đã tắt")}
+              {device.type === "Sensor" 
+                ? (() => {
+                    const name = device.name?.toLowerCase() || "";
+                    const key = device.feed_key?.toLowerCase() || "";
+                    if (name.includes("temp") || name.includes("nhiệt") || key.includes("temp") || key.includes("nhiet")) {
+                      return `Nhiệt độ: ${device.current_status || "--"}°C`;
+                    }
+                    if (name.includes("humid") || name.includes("ẩm") || key.includes("humid") || key.includes("doam")) {
+                      return `Độ ẩm: ${device.current_status || "--"}%`;
+                    }
+                    if (name.includes("light") || name.includes("ánh sáng") || key.includes("light") || key.includes("anhsang")) {
+                      return `Ánh sáng: ${device.current_status || "--"} Lux`;
+                    }
+                    if (name.includes("motion") || name.includes("chuyển động") || name.includes("chuyen dong") || key.includes("motion") || key.includes("chuyen-dong")) {
+                      return (device.current_status === "1" || device.current_status === 1 || String(device.current_status).toLowerCase() === "active")
+                        ? "Phát hiện chuyển động"
+                        : "Trạng thái: Yên tĩnh";
+                    }
+                    return `Đang giám sát: ${device.current_status || "--"}`;
+                  })()
+                : (isOn ? "Đang bật" : "Đã tắt")}
             </span>
           </div>
         </div>

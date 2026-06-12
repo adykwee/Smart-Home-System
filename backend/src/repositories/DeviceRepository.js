@@ -2,7 +2,13 @@ const Device = require('../models/deviceModel');
 
 class DeviceRepository {
   async findByFeedKey(feed_key) {
-    return await Device.findOne({ feed_key });
+    // Tìm theo feed_key hoặc tên thiết bị (do Adafruit có thể gửi cả 2 lên MQTT)
+    return await Device.findOne({
+      $or: [
+        { feed_key: feed_key },
+        { name: feed_key }
+      ]
+    });
   }
 
   async createDevice(deviceData) {
