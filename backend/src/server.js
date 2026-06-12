@@ -96,7 +96,9 @@ mqttClient.on("message", async (topic, message) => {
       }
 
       // Kiểm tra ngưỡng khác (Strategy Pattern)
-      await alertEngine.checkThresholds(device._id, feed, numericValue, io);
+      if (!isMotionSensor) {
+        await alertEngine.checkThresholds(device._id, feed, numericValue, io);
+      }
 
     } else {
       const isFan = device.name?.toLowerCase().includes('fan') || 
