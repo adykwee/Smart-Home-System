@@ -1,20 +1,11 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import {
-  Home,
-  LayoutGrid,
-  LampDesk,
-  ShieldCheck,
-  MapPin,
-  Users,
-  BarChart2,
-  LogOut
-} from "lucide-react";
+import { Home, ShieldCheck, LogOut } from "lucide-react";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -22,52 +13,51 @@ export default function Sidebar() {
   };
 
   const links = [
-    { name: "Dashboard", path: "/", icon: Home },
-    { name: "Thiết bị", path: "/devices", icon: LayoutGrid },
-    { name: "Trạng thái thiết bị", path: "/device-status", icon: LampDesk },
-    { name: "Cảnh báo", path: "/alerts", icon: ShieldCheck },
-    { name: "Lịch trình", path: "/schedules", icon: MapPin },
-    { name: "Người dùng", path: "/users", icon: Users },
-    { name: "Nhật ký", path: "/logs", icon: BarChart2 },
+    { name: "Bật/Tắt Thiết Bị", path: "/", icon: Home },
+    { name: "Cài Đặt Ngưỡng", path: "/alerts", icon: ShieldCheck },
   ];
 
   return (
-    <aside className="w-[100px] bg-[#7048e8] flex flex-col items-center py-8 z-20 rounded-r-[40px] shadow-[10px_0_30px_rgba(112,72,232,0.15)] relative">
-      <nav className="flex-1 flex flex-col items-center gap-4 w-full mt-10">
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full z-20">
+      {/* Brand Header */}
+      <div className="h-20 flex items-center px-6 border-b border-slate-100">
+        <span className="text-lg font-bold text-slate-800 tracking-wide uppercase">
+          Smart Home
+        </span>
+      </div>
+
+      {/* Navigation Links */}
+      <nav className="flex-1 px-4 py-6 space-y-1">
         {links.map((link) => {
           const Icon = link.icon;
-          const isActive = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+          const isActive = location.pathname === link.path;
           
           return (
-            <div key={link.path} className="relative w-full flex justify-end h-16">
-              {isActive && (
-                <>
-                  <div className="absolute top-0 right-0 w-[calc(100%-16px)] h-full bg-[#f4f5f9] rounded-l-[24px]"></div>
-                </>
-              )}
-              <NavLink
-                to={link.path}
-                className={`relative z-10 w-[calc(100%-16px)] flex items-center justify-center h-full rounded-l-[24px] transition-colors ${
-                  isActive
-                    ? "text-[#7048e8]"
-                    : "text-white/60 hover:text-white"
-                }`}
-                title={link.name}
-              >
-                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-              </NavLink>
-            </div>
+            <NavLink
+              key={link.path}
+              to={link.path}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-slate-100 text-slate-900"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+              }`}
+            >
+              <Icon size={20} strokeWidth={2} className={isActive ? "text-slate-900" : "text-slate-400"} />
+              <span>{link.name}</span>
+            </NavLink>
           );
         })}
       </nav>
 
-      <div className="w-full flex justify-center pb-4">
+      {/* Logout Section */}
+      <div className="p-4 border-t border-slate-100">
         <button 
           onClick={handleLogout}
-          className="text-white/60 hover:text-white transition-colors p-3" 
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
           title="Đăng xuất"
         >
-          <LogOut size={24} strokeWidth={2} />
+          <LogOut size={20} strokeWidth={2} />
+          <span>Đăng xuất</span>
         </button>
       </div>
     </aside>

@@ -118,7 +118,7 @@ export default function Alerts() {
         </div>
         <button 
           onClick={() => { setIsAdding(!isAdding); setEditId(null); }}
-          className="bg-[#7048e8] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 hover:bg-[#6038d8] transition-all shadow-lg shadow-[#7048e8]/20"
+          className="bg-slate-800 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-slate-700 transition-all shadow-sm"
         >
           {isAdding ? <X size={18} /> : <Plus size={18} />}
           {isAdding ? "Hủy bỏ" : "Thêm ngưỡng mới"}
@@ -135,7 +135,7 @@ export default function Alerts() {
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Thiết bị cảm biến</label>
                 <select 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:border-[#7048e8]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-800"
                   value={formData.device_id}
                   onChange={(e) => setFormData({...formData, device_id: e.target.value})}
                 >
@@ -149,7 +149,7 @@ export default function Alerts() {
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Loại thông số</label>
                 <select 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:border-[#7048e8]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-800"
                   value={formData.metric_type}
                   onChange={(e) => setFormData({...formData, metric_type: e.target.value})}
                 >
@@ -164,7 +164,7 @@ export default function Alerts() {
                   <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Ngưỡng dưới (Min)</label>
                   <input 
                     type="number"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:border-[#7048e8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-800"
                     placeholder="VD: 15"
                     value={formData.min_value}
                     onChange={(e) => setFormData({...formData, min_value: e.target.value})}
@@ -174,7 +174,7 @@ export default function Alerts() {
                   <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Ngưỡng trên (Max)</label>
                   <input 
                     type="number"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:border-[#7048e8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-800"
                     placeholder="VD: 35"
                     value={formData.max_value}
                     onChange={(e) => setFormData({...formData, max_value: e.target.value})}
@@ -185,7 +185,7 @@ export default function Alerts() {
               <button 
                 onClick={handleSave}
                 disabled={!formData.device_id}
-                className="w-full bg-[#7048e8] text-white font-bold py-4 rounded-2xl mt-4 hover:bg-[#6038d8] transition-all disabled:bg-slate-300 shadow-lg shadow-[#7048e8]/20"
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl mt-4 transition-all disabled:bg-slate-300 shadow-sm"
               >
                 Lưu cài đặt
               </button>
@@ -203,7 +203,7 @@ export default function Alerts() {
             </div>
           ) : (
             thresholds.map(t => (
-              <div key={t._id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-[#7048e8]/30 transition-all">
+              <div key={t._id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group hover:border-slate-300 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center">
                     {getIcon(t.metric_type)}
@@ -228,7 +228,7 @@ export default function Alerts() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => startEdit(t)}
-                      className="p-2 text-slate-400 hover:text-[#7048e8] hover:bg-[#7048e8]/10 rounded-xl transition-all"
+                      className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all"
                     >
                       <Edit2 size={18} />
                     </button>

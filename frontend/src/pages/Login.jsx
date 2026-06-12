@@ -41,21 +41,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="w-full max-w-md p-8 bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-[-50px] left-[-50px] w-32 h-32 bg-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-indigo-400/20 rounded-full blur-3xl"></div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-md border border-slate-200 relative overflow-hidden">
         
         <div className="relative z-10">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#7048e8] to-indigo-400 text-white mb-6 shadow-lg shadow-indigo-200">
-              <User size={32} />
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-slate-800 text-white mb-4 shadow-sm">
+              <User size={28} />
             </div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+              {isLogin ? 'Đăng Nhập' : 'Đăng Ký Tài Khoản'}
             </h1>
-            <p className="text-slate-500 mt-2">
+            <p className="text-slate-500 text-sm mt-1">
               {isLogin ? 'Đăng nhập để vào bảng điều khiển' : 'Đăng ký tài khoản để quản lý nhà thông minh'}
             </p>
           </div>
@@ -67,7 +64,7 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 ml-1">Username</label>
               <div className="relative">
@@ -78,7 +75,7 @@ export default function Login() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-[#7048e8]/20 focus:border-[#7048e8] transition-all outline-none"
+                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-500/20 focus:border-slate-800 transition-all outline-none"
                   placeholder="Nhập tên đăng nhập"
                 />
               </div>
@@ -94,7 +91,7 @@ export default function Login() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-[#7048e8]/20 focus:border-[#7048e8] transition-all outline-none"
+                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-500/20 focus:border-slate-800 transition-all outline-none"
                   placeholder="Nhập mật khẩu"
                 />
               </div>
@@ -103,7 +100,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3.5 px-4 bg-[#7048e8] hover:bg-[#5f3dc4] text-white font-semibold rounded-2xl transition-all shadow-lg shadow-[#7048e8]/30 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full mt-2 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <Loader2 size={20} className="animate-spin" />
@@ -116,14 +113,14 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <button
               type="button"
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
               }}
-              className="text-sm text-slate-500 hover:text-[#7048e8] font-medium transition-colors"
+              className="text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors hover:underline"
             >
               {isLogin 
                 ? 'Chưa có tài khoản? Đăng ký ngay' 
