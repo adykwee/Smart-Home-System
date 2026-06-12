@@ -118,7 +118,7 @@ const DeviceCard = ({ device, onToggle, onDelete, onEdit, isUpdating }) => {
                       return `Ánh sáng: ${device.current_status || "--"} Lux`;
                     }
                     if (name.includes("motion") || name.includes("chuyển động") || name.includes("chuyen dong") || key.includes("motion") || key.includes("chuyen-dong")) {
-                      return (device.current_status === "1" || device.current_status === 1 || String(device.current_status).toLowerCase() === "active")
+                      return (device.current_status === "1" || device.current_status === 1 || String(device.current_status).toLowerCase() === "active" || String(device.current_status).toLowerCase() === "true")
                         ? "Phát hiện chuyển động"
                         : "Trạng thái: Yên tĩnh";
                     }

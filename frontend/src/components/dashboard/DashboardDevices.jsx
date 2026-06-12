@@ -112,7 +112,7 @@ export default function DashboardDevices({ devicesState, toggleDevice, sensorVal
                     {isSensor && (
                       <span className="text-lg font-black text-white ml-auto">
                         {config.label === 'Chuyển động' 
-                          ? (currentVal === '1' || currentVal === 1 || String(currentVal).toLowerCase() === 'active' ? 'Phát hiện' : 'Yên tĩnh')
+                          ? (currentVal === '1' || currentVal === 1 || String(currentVal).toLowerCase() === 'active' || String(currentVal).toLowerCase() === 'true' ? 'Phát hiện' : 'Yên tĩnh')
                           : (currentVal || '--')}
                         <span className="text-xs font-bold ml-0.5">{config.unit}</span>
                       </span>

@@ -76,7 +76,7 @@ mqttClient.on("message", async (topic, message) => {
       // Tự động kích hoạt thông báo khi phát hiện chuyển động (kể cả không cấu hình ngưỡng)
       const isMotionSensor = feed.toLowerCase().includes('motion') || 
                              (device.name && device.name.toLowerCase().includes('chuyển động'));
-      if (isMotionSensor && (data === '1' || data.toLowerCase() === 'active')) {
+      if (isMotionSensor && (data === '1' || data.toLowerCase() === 'active' || data.toLowerCase() === 'true')) {
         const msg = `[Cảnh báo] Phát hiện chuyển động tại khu vực [${device.room || 'Chưa gán phòng'}]`;
         
         io.emit('alert', {
