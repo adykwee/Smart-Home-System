@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { usePage } from "../contexts/PageContext";
 import WelcomeBanner from "../components/dashboard/WelcomeBanner";
 import RoomHeader from "../components/dashboard/RoomHeader";
-import QuickControls from "../components/dashboard/QuickControls";
 import FanSpeedDial from "../components/dashboard/FanSpeedDial";
 import DashboardDevices from "../components/dashboard/DashboardDevices";
 import Members from "../components/dashboard/Members";
@@ -218,7 +217,6 @@ export default function Dashboard() {
         
         {/* Banner cảnh báo chuyển động real-time */}
         <RoomHeader temp={currentTemp} humidity={currentHumid} light={currentLight} username={userName} motionAlert={motionAlert} />
-        <QuickControls dbDevices={dbDevices} />
         <FanSpeedDial 
           fanSpeed={fanSpeed} 
           setFanSpeed={changeFanSpeed} 

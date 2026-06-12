@@ -89,7 +89,7 @@ mqttClient.on("message", async (topic, message) => {
         });
 
         await systemLogRepo.createLog({
-          event_type: 'ALERT',
+          event_type: 'MOTION_ALERT',
           description: msg,
           device_id: device._id
         });

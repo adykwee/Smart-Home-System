@@ -46,6 +46,7 @@ export default function MainLayout() {
       if (toastEnabled) {
         const newAlert = {
           id: Date.now(),
+          type: data.type || 'threshold',
           message: data.message,
           time: new Date().toLocaleTimeString()
         };
@@ -70,18 +71,20 @@ export default function MainLayout() {
       
       {/* Toast box */}
       <div className="absolute top-20 right-8 z-50 flex flex-col gap-2">
-        {alerts.map(alert => (
-          <div key={alert.id} className="bg-rose-500 text-white px-4 py-3 rounded-xl shadow-lg shadow-rose-500/30 flex items-start gap-3 animate-slide-in-right max-w-sm">
+        {alerts.map(alert => {
+          const isMotion = alert.type === 'motion';
+          return (
+          <div key={alert.id} className={`${isMotion ? 'bg-amber-500 shadow-amber-500/30' : 'bg-rose-500 shadow-rose-500/30'} text-white px-4 py-3 rounded-xl shadow-lg flex items-start gap-3 animate-slide-in-right max-w-sm`}>
             <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-semibold mb-0.5">Cảnh báo ngưỡng!</p>
-              <p className="text-xs text-rose-100">{alert.message}</p>
+              <p className="text-sm font-semibold mb-0.5">{isMotion ? 'Phát hiện chuyển động!' : 'Cảnh báo ngưỡng!'}</p>
+              <p className="text-xs text-white/90">{alert.message}</p>
             </div>
-            <button onClick={() => dismissAlert(alert.id)} className="text-rose-200 hover:text-white transition-colors">
+            <button onClick={() => dismissAlert(alert.id)} className="text-white/70 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
-        ))}
+        )})}
       </div>
 
       <Sidebar />

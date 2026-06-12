@@ -5,7 +5,7 @@ import {
   LayoutGrid,
   LampDesk,
   ShieldCheck,
-  MapPin,
+  Timer,
   Users,
   BarChart2,
   LogOut
@@ -26,7 +26,7 @@ export default function Sidebar() {
     { name: "Thiết bị", path: "/devices", icon: LayoutGrid },
     { name: "Trạng thái thiết bị", path: "/device-status", icon: LampDesk },
     { name: "Cảnh báo", path: "/alerts", icon: ShieldCheck },
-    { name: "Lịch trình", path: "/schedules", icon: MapPin },
+    { name: "Lịch trình", path: "/schedules", icon: Timer },
     { name: "Người dùng", path: "/users", icon: Users },
     { name: "Nhật ký", path: "/logs", icon: BarChart2 },
   ];

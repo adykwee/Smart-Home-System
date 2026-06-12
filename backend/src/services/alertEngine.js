@@ -65,6 +65,7 @@ class AlertContext {
             io.emit('alert', {
               device_id: deviceId,
               feed: feedKey,
+              type: 'threshold',
               message: formattedMessage,
               timestamp: new Date()
             });

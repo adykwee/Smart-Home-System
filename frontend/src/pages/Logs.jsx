@@ -80,6 +80,11 @@ export default function Logs() {
           label: 'Cảnh báo',
           classes: 'bg-rose-50 text-rose-600 border-rose-100'
         };
+      case 'MOTION_ALERT':
+        return {
+          label: 'Chuyển động',
+          classes: 'bg-amber-50 text-amber-600 border-amber-100'
+        };
       case 'ĐIỀU KHIỂN THIẾT BỊ':
         return {
           label: 'Điều khiển',
@@ -233,6 +238,7 @@ export default function Logs() {
             >
               <option value="ALL">Tất cả sự kiện</option>
               <option value="ALERT">Cảnh báo ngưỡng (Alert)</option>
+              <option value="MOTION_ALERT">Cảnh báo chuyển động</option>
               <option value="ĐIỀU KHIỂN THIẾT BỊ">Điều khiển thiết bị</option>
               <option value="DEVICE_MANAGEMENT">Quản lý thiết bị</option>
               <option value="SCHEDULE_MANAGEMENT">Quản lý lịch trình</option>
